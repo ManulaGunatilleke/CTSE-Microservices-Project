@@ -1,0 +1,32 @@
+.searchCourseDiv {
+    padding-bottom: 2%;
+}
+
+.ViewAllCoursesImage {
+    width: 220px;
+    height: 140px;
+    margin-left: 10%;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+}
+
+
+@media (max-width: 768px) {
+    .flex.flex-wrap {
+        flex-direction: column;
+        align-items: center; /* Optional: to center items horizontally */
+    }
+
+    .w-1\/5 {
+        width: 100%; /* Optionally change the width of each card */
+    }
+
+    .ViewAllCoursesImage {
+        width: 220px;
+        height: 140px;
+        margin-left: 30%;
+    }
+}
