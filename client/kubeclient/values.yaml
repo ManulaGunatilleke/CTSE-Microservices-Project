@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: client.azurecr.io/client-api
+  tag: 
+  pullPolicy: IfNotPresent
+
+service:
+  protocol: TCP
+  port: 80
+  targetPort: 80
+  nodePort: 31080
+  type: LoadBalancer
+
+pod:
+  containerPort: 3000
+
+namespace: client
+
+configmap:
+  enabled: true
+  name: client-configmap
+  data:
+    MAIN_DB_NAME: main
+
+secrets:
+  enabled: true
+  name: client-secrets
+  data:  
+    AZURE_STORAGE_CONNECTION_STRING: ""
+    

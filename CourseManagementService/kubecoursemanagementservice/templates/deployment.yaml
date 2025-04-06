@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-api-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: course
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: course
+  template:
+    metadata:
+      labels:
+        app: course
+    spec:
+      containers:
+        - name: course
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: {{ .Values.pod.containerPort }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.configmap.name }}
+            - secretRef:
+                name: {{ .Values.secrets.name }}

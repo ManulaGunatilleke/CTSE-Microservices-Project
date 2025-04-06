@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: enrollment-api-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: enrollment
+  ports:
+    - protocol: {{ .Values.service.protocol }}
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.pod.containerPort }}
+      nodePort: {{ .Values.service.nodePort }}
+  type: {{ .Values.service.type }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: enrollment-app-gateway
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
+  tls:
+  - hosts:
+    - enrollmentapik8s.eastus.cloudapp.azure.com
+    secretName: tls-secret-enrollmentapik8s
+  rules:
+  - host: enrollmentapik8s.eastus.cloudapp.azure.com
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: enrollment-api-service
+            port:
+              number: {{ .Values.service.targetPort }}
+        pathType: Prefix

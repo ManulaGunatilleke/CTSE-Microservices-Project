@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: apigateway.azurecr.io/apigateway-api
+  tag: 
+  pullPolicy: IfNotPresent
+
+service:
+  protocol: TCP
+  port: 80
+  targetPort: 80
+  nodePort: 31080
+  type: LoadBalancer
+
+pod:
+  containerPort: 3000
+
+namespace: apigateway
+
+configmap:
+  enabled: true
+  name: apigateway-configmap
+  data:
+    MAIN_DB_NAME: main
+
+secrets:
+  enabled: true
+  name: apigateway-secrets
+  data:  
+    AZURE_STORAGE_CONNECTION_STRING: ""
+    

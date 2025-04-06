@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: course.azurecr.io/course-api
+  tag: 
+  pullPolicy: IfNotPresent
+
+service:
+  protocol: TCP
+  port: 80
+  targetPort: 80
+  nodePort: 31080
+  type: LoadBalancer
+
+pod:
+  containerPort: 3000
+
+namespace: course
+
+configmap:
+  enabled: true
+  name: course-configmap
+  data:
+    MAIN_DB_NAME: main
+
+secrets:
+  enabled: true
+  name: course-secrets
+  data:  
+    AZURE_STORAGE_CONNECTION_STRING: ""
+    

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-api-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: client
+  ports:
+    - protocol: {{ .Values.service.protocol }}
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.pod.containerPort }}
+      nodePort: {{ .Values.service.nodePort }}
+  type: {{ .Values.service.type }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: client-app-gateway
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
+  tls:
+  - hosts:
+    - clientapik8s.eastus.cloudapp.azure.com
+    secretName: tls-secret-clientapik8s
+  rules:
+  - host: clientapik8s.eastus.cloudapp.azure.com
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: client-api-service
+            port:
+              number: {{ .Values.service.targetPort }}
+        pathType: Prefix

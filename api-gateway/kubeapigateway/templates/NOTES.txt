@@ -1,0 +1,50 @@
+ApiGateway Deployment Notes
+========================
+
+1. Accessing the Application:
+   - The ApiGateway application has been successfully deployed in the `{{ .Values.namespace }}` namespace.
+   - To access the application, use the NodePort:
+     ```
+     URL: http://<Node_IP>:{{ .Values.service.nodePort }}
+     Port: {{ .Values.service.nodePort }}
+     ```
+   - Ensure that the NodePort is open and accessible from your environment.
+
+2. Configurations:
+   - Environment variables have been configured through the ConfigMap and injected into the application.
+   - These include configurations for Keycloak, MongoDB, Stripe, PayHere, and other services.
+
+3. Debugging:
+   - To check the status of the deployment, use:
+     ```
+     kubectl get deployments -n {{ .Values.namespace }} apigateway-deployment
+     ```
+   - To inspect pod logs, use:
+     ```
+     kubectl logs -n {{ .Values.namespace }} <pod_name>
+     ```
+   - Replace `<pod_name>` with the name of the running pod.
+
+4. Managing Configurations:
+   - Configuration values can be updated by modifying the `values.yaml` file and applying the chart again:
+     ```
+     helm upgrade <release_name> ./apigateway
+     ```
+
+5. Scaling the Application:
+   - To scale the application replicas, use:
+     ```
+     kubectl scale deployment apigateway-deployment --replicas=<number> -n {{ .Values.namespace }}
+     ```
+
+6. Helm Chart Details:
+   - Release Name: `<release_name>`
+   - Namespace: `{{ .Values.namespace }}`
+
+7. Cleanup:
+   - To delete the deployment and associated resources, use:
+     ```
+     helm uninstall <release_name> -n {{ .Values.namespace }}
+     ```
+
+Thank you for deploying ApiGateway with Helm! If you encounter any issues, ensure that all dependencies like MongoDB and Keycloak are properly configured and reachable.
