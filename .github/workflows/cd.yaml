@@ -39,20 +39,69 @@ jobs:
       with:
         kubeconfig: ${{ secrets.DEV_KUBE_CONFIG }}
     
-    - name: Update Kubernetes manifests
-      run: |
-        # Get the SHA from the CI workflow that triggered this one
-        GITHUB_SHA=${{ github.event.workflow_run.head_sha || github.sha }}
-        
-        # Update image tags in all manifest files
-        for service in client api-gateway user-management course-management payment-management enrollment-management; do
-          sed -i "s|image: ${{ secrets.DOCKERHUB_USERNAME }}/${service}:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/${service}:${GITHUB_SHA}|g" k8s/dev/*.yaml
-        done
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'latest'
     
-    - name: Deploy to Kubernetes Dev Environment
+    - name: Get SHA
+      id: vars
+      run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+      env:
+        GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    
+    - name: Deploy client service
       run: |
-        kubectl apply -f k8s/dev/
-        kubectl get pods -n development
+        helm upgrade --install client ./helm/client \
+          --namespace development \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/client \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=development \
+          --values ./helm/client/values-dev.yaml
+    
+    - name: Deploy api-gateway
+      run: |
+        helm upgrade --install api-gateway ./helm/api-gateway \
+          --namespace development \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/api-gateway \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=development \
+          --values ./helm/api-gateway/values-dev.yaml
+    
+    - name: Deploy user-management service
+      run: |
+        helm upgrade --install user-management ./helm/user-management \
+          --namespace development \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/user-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=development \
+          --values ./helm/user-management/values-dev.yaml
+
+    - name: Deploy other microservices
+      run: |
+        # Course management service
+        helm upgrade --install course-management ./helm/course-management \
+          --namespace development \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/course-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=development \
+          --values ./helm/course-management/values-dev.yaml
+          
+        # Payment management service
+        helm upgrade --install payment-management ./helm/payment-management \
+          --namespace development \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/payment-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=development \
+          --values ./helm/payment-management/values-dev.yaml
+          
+        # Enrollment management service
+        helm upgrade --install enrollment-management ./helm/enrollment-management \
+          --namespace development \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/enrollment-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=development \
+          --values ./helm/enrollment-management/values-dev.yaml
 
   deploy-to-production:
     if: |
@@ -74,17 +123,66 @@ jobs:
       with:
         kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
     
-    - name: Update Kubernetes manifests
-      run: |
-        # Get the SHA from the CI workflow that triggered this one
-        GITHUB_SHA=${{ github.event.workflow_run.head_sha || github.sha }}
-        
-        # Update image tags in all manifest files
-        for service in client api-gateway user-management course-management payment-management enrollment-management; do
-          sed -i "s|image: ${{ secrets.DOCKERHUB_USERNAME }}/${service}:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/${service}:${GITHUB_SHA}|g" k8s/prod/*.yaml
-        done
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'latest'
     
-    - name: Deploy to Kubernetes Production Environment
+    - name: Get SHA
+      id: vars
+      run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+      env:
+        GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    
+    - name: Deploy client service
       run: |
-        kubectl apply -f k8s/prod/
-        kubectl get pods -n production
+        helm upgrade --install client ./helm/client \
+          --namespace production \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/client \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=production \
+          --values ./helm/client/values-prod.yaml
+    
+    - name: Deploy api-gateway
+      run: |
+        helm upgrade --install api-gateway ./helm/api-gateway \
+          --namespace production \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/api-gateway \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=production \
+          --values ./helm/api-gateway/values-prod.yaml
+    
+    - name: Deploy user-management service
+      run: |
+        helm upgrade --install user-management ./helm/user-management \
+          --namespace production \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/user-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=production \
+          --values ./helm/user-management/values-prod.yaml
+
+    - name: Deploy other microservices
+      run: |
+        # Course management service
+        helm upgrade --install course-management ./helm/course-management \
+          --namespace production \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/course-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=production \
+          --values ./helm/course-management/values-prod.yaml
+          
+        # Payment management service
+        helm upgrade --install payment-management ./helm/payment-management \
+          --namespace production \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/payment-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=production \
+          --values ./helm/payment-management/values-prod.yaml
+          
+        # Enrollment management service
+        helm upgrade --install enrollment-management ./helm/enrollment-management \
+          --namespace production \
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/enrollment-management \
+          --set image.tag=${{ steps.vars.outputs.sha }} \
+          --set environment=production \
+          --values ./helm/enrollment-management/values-prod.yaml
