@@ -6,10 +6,10 @@ const connectToDatabase = require('./config/database');
 const { authenticate } = require("./middleware/authMiddleware");
 const helmet = require("helmet"); // use helmet package for secure csp policy
 
-const passport = require("passport");
+//const passport = require("passport");
 //const cookieSession = require("cookie-session");
 const session = require('express-session');
-const passportStrategy = require("./passport");
+//const passportStrategy = require("./passport");
 const cors = require("cors");
 
 
@@ -32,8 +32,8 @@ app.use(
   );
   
   // Initialize Passport and session handling
-  app.use(passport.initialize());
-  app.use(passport.session());
+  //app.use(passport.initialize());
+  //app.use(passport.session());
 
 
 //Initializing the port number
@@ -111,8 +111,8 @@ const authenticateRole = require('./routes/authenticateRole');
 app.use('/authenticate-role', authenticateRole);
 
 // auth routes
-const googleauthRouter = require('./routes/googleRoutes');
-app.use('/google-auth',googleauthRouter);
+// const googleauthRouter = require('./routes/googleRoutes');
+// app.use('/google-auth',googleauthRouter);
 
 
 
