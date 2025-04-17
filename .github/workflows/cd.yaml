@@ -6,7 +6,7 @@ on:
     types:
       - completed
     branches: [main, develop]
-  
+
   workflow_dispatch:
     inputs:
       environment:
@@ -25,42 +25,47 @@ jobs:
       (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up kubectl
       uses: azure/setup-kubectl@v3
       with:
         version: 'latest'
-      
+
+    - name: Decode kubeconfig secret
+      run: |
+        echo "${{ secrets[format('{0}_KUBE_CONFIG', github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'PROD' || 'DEV'))] }}" | base64 -d > kubeconfig
+
     - name: Configure kubectl
       uses: azure/k8s-set-context@v3
       with:
-        kubeconfig: ${{ secrets[format('{0}_KUBE_CONFIG', github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'PROD' || 'DEV'))] }}
-    
+        method: kubeconfig
+        kubeconfig: ${{ github.workspace }}/kubeconfig
+
     - name: Set up Helm
       uses: azure/setup-helm@v3
       with:
         version: 'latest'
-    
+
     - name: Get SHA
       id: vars
       run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
       env:
         GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-    
+
     - name: Set environment variables
       id: env
       run: |
         ENVIRONMENT=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
         NAMESPACE=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
         VALUES_FILE_SUFFIX=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prod' || 'dev') }}
-        
+
         echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
         echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
         echo "values_suffix=$VALUES_FILE_SUFFIX" >> $GITHUB_OUTPUT
-    
+
     - name: Deploy to Kubernetes
       run: |
         # Generate values file with secrets
@@ -130,7 +135,7 @@ jobs:
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
         EOF
-        
+
         # Deploy using Helm with values files
         helm upgrade --install learning-platform ./learning-platform \
           --namespace ${{ steps.env.outputs.namespace }} \
