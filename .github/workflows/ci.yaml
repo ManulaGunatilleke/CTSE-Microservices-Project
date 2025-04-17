@@ -70,6 +70,18 @@ jobs:
           image=moby/buildkit:master
         install: true
         
+    - name: Update Dockerfile for native module support
+      working-directory: ${{ matrix.service.dir }}
+      run: |
+        # Check if Dockerfile exists
+        if [ -f "Dockerfile" ]; then
+          # Add Python and build tools after the FROM line
+          sed -i '/^FROM/a RUN apk add --no-cache python3 make g++ gcc libc-dev' Dockerfile
+        else
+          echo "Dockerfile not found in ${{ matrix.service.dir }}"
+          exit 1
+        fi
+        
     - name: Login to DockerHub
       uses: docker/login-action@v2
       with:
@@ -80,7 +92,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: ${{ matrix.service.dir }}
-        platforms: ${{ contains(matrix.service.name, 'user-management') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+        platforms: linux/amd64,linux/arm64
         push: ${{ github.event_name != 'pull_request' }}
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:${{ github.sha }}
