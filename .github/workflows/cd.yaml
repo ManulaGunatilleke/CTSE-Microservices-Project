@@ -24,7 +24,6 @@ jobs:
       (github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
 
     steps:
     - uses: actions/checkout@v3
@@ -34,10 +33,36 @@ jobs:
       with:
         version: 'latest'
 
-    - name: Decode kubeconfig secret
+    - name: Determine environment
+      id: env
       run: |
-        echo "${{ secrets[format('{0}_KUBE_CONFIG', github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'PROD' || 'DEV'))] }}" | base64 -d > kubeconfig
-      shell: bash
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+        elif [[ "${{ github.event.workflow_run.head_branch }}" == "main" ]]; then
+          ENVIRONMENT="production"
+        else
+          ENVIRONMENT="development"
+        fi
+        echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+        echo "namespace=$ENVIRONMENT" >> $GITHUB_OUTPUT
+        if [[ "$ENVIRONMENT" == "production" ]]; then
+          echo "values_suffix=prod" >> $GITHUB_OUTPUT
+        else
+          echo "values_suffix=dev" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Set Kubeconfig Secret Value
+      id: kubeconfig
+      run: |
+        if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
+          echo "value=${{ secrets.PROD_KUBE_CONFIG }}" >> $GITHUB_OUTPUT
+        else
+          echo "value=${{ secrets.DEV_KUBE_CONFIG }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Decode kubeconfig
+      run: |
+        echo "${{ steps.kubeconfig.outputs.value }}" | base64 -d > kubeconfig
 
     - name: Configure kubectl
       uses: azure/k8s-set-context@v3
@@ -56,27 +81,14 @@ jobs:
       env:
         GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-    - name: Set environment variables
-      id: env
+    - name: Generate values-runtime.yaml
       run: |
-        ENVIRONMENT=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
-        NAMESPACE=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
-        VALUES_FILE_SUFFIX=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prod' || 'dev') }}
-
-        echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
-        echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
-        echo "values_suffix=$VALUES_FILE_SUFFIX" >> $GITHUB_OUTPUT
-
-    - name: Deploy to Kubernetes
-      run: |
-        # Generate values file with secrets
         cat > values-runtime.yaml << EOF
         namespace: ${{ steps.env.outputs.namespace }}
         common:
           registry: ${{ secrets.DOCKERHUB_USERNAME }}
           imagePullPolicy: Always
           environment: ${{ steps.env.outputs.environment }}
-
         services:
           client:
             tag: ${{ steps.vars.outputs.sha }}
@@ -95,7 +107,6 @@ jobs:
                 REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}"
                 REACT_APP_FIREBASE_PROJECT_ID: "${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}"
                 REACT_APP_FIREBASE_STORAGE_BUCKET: "${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}"
-
           apiGateway:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -103,7 +114,6 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-
           userManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -111,7 +121,6 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-
           courseManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -119,7 +128,6 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-
           paymentManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -127,7 +135,6 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-
           enrollmentManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -137,7 +144,8 @@ jobs:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
         EOF
 
-        # Deploy using Helm with values files
+    - name: Deploy to Kubernetes
+      run: |
         helm upgrade --install learning-platform ./learning-platform \
           --namespace ${{ steps.env.outputs.namespace }} \
           --create-namespace \
