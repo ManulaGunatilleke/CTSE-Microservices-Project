@@ -37,6 +37,7 @@ jobs:
     - name: Decode kubeconfig secret
       run: |
         echo "${{ secrets[format('{0}_KUBE_CONFIG', github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'PROD' || 'DEV'))] }}" | base64 -d > kubeconfig
+      shell: bash
 
     - name: Configure kubectl
       uses: azure/k8s-set-context@v3
@@ -75,7 +76,7 @@ jobs:
           registry: ${{ secrets.DOCKERHUB_USERNAME }}
           imagePullPolicy: Always
           environment: ${{ steps.env.outputs.environment }}
-        
+
         services:
           client:
             tag: ${{ steps.vars.outputs.sha }}
@@ -94,7 +95,7 @@ jobs:
                 REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}"
                 REACT_APP_FIREBASE_PROJECT_ID: "${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}"
                 REACT_APP_FIREBASE_STORAGE_BUCKET: "${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}"
-                
+
           apiGateway:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -102,7 +103,7 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
+
           userManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -110,7 +111,7 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
+
           courseManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -118,7 +119,7 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
+
           paymentManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
@@ -126,7 +127,7 @@ jobs:
               enabled: true
               data:
                 MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
+
           enrollmentManagement:
             tag: ${{ steps.vars.outputs.sha }}
             enabled: true
