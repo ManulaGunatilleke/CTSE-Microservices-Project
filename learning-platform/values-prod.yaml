@@ -1,0 +1,65 @@
+# Production-specific values
+namespace: production
+domain: akslerningplatform.eastus.cloudapp.azure.com
+
+# MongoDB configuration - production specific
+# Note: In a real production environment, this should be injected as a secret
+mongodb:
+  url: "mongodb+srv://prod-user:prod-password@prod-cluster.mongodb.net/prod_db?retryWrites=true&w=majority"
+
+# Service-specific overrides for production
+services:
+  client:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+  apiGateway:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+  userManagement:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+  courseManagement:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+  paymentManagement:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+  enrollmentManagement:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi

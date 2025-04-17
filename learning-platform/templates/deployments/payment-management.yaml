@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.paymentManagement.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.services.paymentManagement.name }}
+    {{- include "learning-platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.paymentManagement.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.paymentManagement.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.paymentManagement.name }}
+    spec:
+      containers:
+        - name: {{ .Values.services.paymentManagement.name }}
+          image: {{ .Values.common.registry }}/{{ .Values.services.paymentManagement.image }}:{{ .Values.services.paymentManagement.tag }}
+          imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.paymentManagement.targetPort }}
+          {{- if and .Values.services.paymentManagement.secrets (eq .Values.services.paymentManagement.secrets.enabled true) }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.services.paymentManagement.name }}-secrets
+          {{- end }}
+          resources:
+            {{- toYaml .Values.services.paymentManagement.resources | nindent 12 }}

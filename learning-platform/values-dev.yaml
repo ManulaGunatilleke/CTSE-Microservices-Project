@@ -1,0 +1,22 @@
+# Development-specific values
+namespace: development
+domain: dev.akslerningplatform.eastus.cloudapp.azure.com
+
+# MongoDB configuration - dev specific
+mongodb:
+  url: "mongodb+srv://dev-user:dev-password@dev-cluster.mongodb.net/dev_db?retryWrites=true&w=majority"
+
+# Service-specific overrides for development
+services:
+  client:
+    replicas: 1
+  apiGateway:
+    replicas: 1
+  userManagement:
+    replicas: 1
+  courseManagement:
+    replicas: 1
+  paymentManagement:
+    replicas: 1
+  enrollmentManagement:
+    replicas: 1

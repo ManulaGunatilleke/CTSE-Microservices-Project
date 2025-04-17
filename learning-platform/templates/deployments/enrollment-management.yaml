@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.enrollmentManagement.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.services.enrollmentManagement.name }}
+    {{- include "learning-platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.enrollmentManagement.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.enrollmentManagement.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.enrollmentManagement.name }}
+    spec:
+      containers:
+        - name: {{ .Values.services.enrollmentManagement.name }}
+          image: {{ .Values.common.registry }}/{{ .Values.services.enrollmentManagement.image }}:{{ .Values.services.enrollmentManagement.tag }}
+          imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.enrollmentManagement.targetPort }}
+          {{- if and .Values.services.enrollmentManagement.secrets (eq .Values.services.enrollmentManagement.secrets.enabled true) }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.services.enrollmentManagement.name }}-secrets
+          {{- end }}
+          resources:
+            {{- toYaml .Values.services.enrollmentManagement.resources | nindent 12 }}
