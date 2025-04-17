@@ -1,0 +1,29 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your application is now deploying in namespace: {{ .Values.namespace }}
+
+Application URLs:
+{{- if .Values.ingress.enabled }}
+Main application: http://{{ .Values.domain }}
+API Gateway: http://{{ .Values.domain }}{{ .Values.services.apiGateway.path | replace "(/|$)(.*)" "" }}
+User Management: http://{{ .Values.domain }}{{ .Values.services.userManagement.path | replace "(/|$)(.*)" "" }}
+Course Management: http://{{ .Values.domain }}{{ .Values.services.courseManagement.path | replace "(/|$)(.*)" "" }}
+Payment Management: http://{{ .Values.domain }}{{ .Values.services.paymentManagement.path | replace "(/|$)(.*)" "" }}
+Enrollment Management: http://{{ .Values.domain }}{{ .Values.services.enrollmentManagement.path | replace "(/|$)(.*)" "" }}
+{{- else }}
+To access your services from outside the cluster, you will need to set up port-forwarding:
+
+For the client application:
+  kubectl port-forward -n {{ .Values.namespace }} service/{{ .Values.services.client.name }} 8080:{{ .Values.services.client.port }}
+  Then visit: http://localhost:8080
+
+For the API Gateway:
+  kubectl port-forward -n {{ .Values.namespace }} service/{{ .Values.services.apiGateway.name }} 8081:{{ .Values.services.apiGateway.port }}
+  Then visit: http://localhost:8081
+{{- end }}
+
+To check the status of your pods:
+  kubectl get pods -n {{ .Values.namespace }}
+
+To check the logs of a specific service (e.g., client):
+  kubectl logs -f -n {{ .Values.namespace }} deployment/{{ .Values.services.client.name }}

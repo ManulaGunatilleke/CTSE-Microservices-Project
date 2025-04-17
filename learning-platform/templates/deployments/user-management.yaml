@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.userManagement.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.services.userManagement.name }}
+    {{- include "learning-platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.userManagement.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.userManagement.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.userManagement.name }}
+    spec:
+      containers:
+        - name: {{ .Values.services.userManagement.name }}
+          image: {{ .Values.common.registry }}/{{ .Values.services.userManagement.image }}:{{ .Values.services.userManagement.tag }}
+          imagePullPolicy: {{ .Values.common.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.userManagement.targetPort }}
+          {{- if .Values.common.environment }}
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.common.environment }}
+          {{- end }}
+          {{- if and .Values.services.userManagement.secrets (eq .Values.services.userManagement.secrets.enabled true) }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.services.userManagement.name }}-secrets
+          {{- end }}
+          resources:
+            {{- toYaml .Values.services.userManagement.resources | nindent 12 }}

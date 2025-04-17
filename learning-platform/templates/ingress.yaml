@@ -1,0 +1,82 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "learning-platform.fullname" . }}-ingress
+  namespace: {{ .Values.namespace }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  rules:
+    - host: {{ .Values.domain }}
+      http:
+        paths:
+          {{- if .Values.services.client.enabled }}
+          - path: {{ .Values.services.client.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.client.name }}
+                port:
+                  number: {{ .Values.services.client.port }}
+          {{- end }}
+          
+          {{- if .Values.services.apiGateway.enabled }}
+          - path: {{ .Values.services.apiGateway.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.apiGateway.name }}
+                port:
+                  number: {{ .Values.services.apiGateway.port }}
+          {{- end }}
+          
+          {{- if .Values.services.userManagement.enabled }}
+          - path: {{ .Values.services.userManagement.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.userManagement.name }}
+                port:
+                  number: {{ .Values.services.userManagement.port }}
+          {{- end }}
+          
+          {{- if .Values.services.courseManagement.enabled }}
+          - path: {{ .Values.services.courseManagement.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.courseManagement.name }}
+                port:
+                  number: {{ .Values.services.courseManagement.port }}
+          {{- end }}
+          
+          {{- if .Values.services.paymentManagement.enabled }}
+          - path: {{ .Values.services.paymentManagement.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.paymentManagement.name }}
+                port:
+                  number: {{ .Values.services.paymentManagement.port }}
+          {{- end }}
+          
+          {{- if .Values.services.enrollmentManagement.enabled }}
+          - path: {{ .Values.services.enrollmentManagement.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.enrollmentManagement.name }}
+                port:
+                  number: {{ .Values.services.enrollmentManagement.port }}
+          {{- end }}
+          
+          # Default path
+          - path: /(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.services.client.name }}
+                port:
+                  number: {{ .Values.services.client.port }}
+{{- end }}

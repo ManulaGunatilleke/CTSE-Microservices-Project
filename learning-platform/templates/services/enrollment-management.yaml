@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.enrollmentManagement.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.services.enrollmentManagement.name }}
+    {{- include "learning-platform.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.enrollmentManagement.port }}
+      targetPort: {{ .Values.services.enrollmentManagement.targetPort }}
+      protocol: TCP
+  selector:
+    app: {{ .Values.services.enrollmentManagement.name }}
