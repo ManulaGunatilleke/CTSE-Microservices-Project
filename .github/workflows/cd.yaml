@@ -156,17 +156,24 @@ jobs:
           
           # List existing Helm releases to debug
           echo "Existing Helm releases in all namespaces:"
-          helm list --all-namespaces
+          helm list --all-namespaces || echo "No releases found or error listing releases"
           
-          # Try the upgrade with specific flags matching your local environment
-          helm upgrade learning-platform ./learning-platform \
-            --install \
-            --values ./learning-platform/values.yaml \
-            --values values-runtime.yaml
-            
+          # Check if release exists and use appropriate command
+          if helm list -n default | grep -q "learning-platform"; then
+            echo "Release exists, performing upgrade..."
+            helm upgrade learning-platform ./learning-platform \
+              --values ./learning-platform/values.yaml \
+              --values values-runtime.yaml
+          else
+            echo "Release doesn't exist, performing fresh install..."
+            helm install learning-platform ./learning-platform \
+              --values ./learning-platform/values.yaml \
+              --values values-runtime.yaml
+          fi
+          
           # Verify the deployment happened in the right namespace
           echo "Verifying deployment in test-ingress namespace:"
-          kubectl get pods -n test-ingress
+          kubectl get pods -n test-ingress || echo "No pods found in test-ingress namespace"
 
       - name: Verify deployment
         env:
