@@ -13,7 +13,7 @@ const usePayment = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8800/PaymentManagementService/checkout/create-checkout-session",
+                `${process.env.REACT_APP_BASE_URL}/payment/checkout/create-checkout-session`,
                 body,
                 { headers }
             );
@@ -48,7 +48,7 @@ const usePayment = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8800/PaymentManagementService/payment",
+                `${process.env.REACT_APP_BASE_URL}/payment/payment`,
                 paymentRequest,
                 { headers }
             );
@@ -75,7 +75,7 @@ const usePayment = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8800/EnrollmentManagementService/enrollment/createEnrollment",
+                `${process.env.REACT_APP_BASE_URL}/enrollment/enrollment/createEnrollment`,
                 enrollmentRequest,
                 { headers }
             );

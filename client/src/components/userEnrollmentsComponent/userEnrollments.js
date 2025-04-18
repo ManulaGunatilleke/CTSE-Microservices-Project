@@ -17,7 +17,7 @@ const UserEnrollments = () => {
     const getUserEnrollments = async () => {
         try {
             console.log("User: ",user._id);
-            const response = await axios.get(`http://localhost:8800/EnrollmentManagementService/enrollment/user/${user._id}`);
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/enrollment/enrollment/user/${user._id}`);
             if (response.status === 200) {
                 setEnrollments(response.data);
                 fetchEnrolledCourses(response.data);
@@ -33,7 +33,7 @@ const UserEnrollments = () => {
             
             const courseIds = enrollments.map(enrollment => enrollment.courseId);
             const promises = courseIds.map(courseId =>
-                axios.get(`http://localhost:8800/CourseManagementService/course/getCourse/${courseId}`)
+                axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/getCourse/${courseId}`)
             );
             console.log("enrollments",enrollments);
             const responses = await Promise.all(promises);

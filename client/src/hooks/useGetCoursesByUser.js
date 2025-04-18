@@ -12,7 +12,7 @@ const useGetCoursesByUser = () => {
     useEffect(() => {
         const getCourses = async () => {
             try {
-                const response = await axios.get(`http://localhost:8800/CourseManagementService/course/getAllCourses/${userID}`,
+                const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/getAllCourses/${userID}`,
                     { headers }
                 );
                 if (response.status === 200){

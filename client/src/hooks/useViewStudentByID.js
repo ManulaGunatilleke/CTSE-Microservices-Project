@@ -8,7 +8,7 @@ const useViewStudentById = () => {
 
     const viewSingleStudent = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:8800/UserManagementService/student/get/${id}`);
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/student/get/${id}`);
             setStudent(response.data.student);
             setLoading(false);
         } catch (error) {

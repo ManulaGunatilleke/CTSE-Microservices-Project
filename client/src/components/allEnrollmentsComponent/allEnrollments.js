@@ -56,7 +56,7 @@ const AllEnrollments = () => {
 
   const fetchEnrollments = async () => {
     try {
-      const response = await fetch('http://localhost:8800/EnrollmentManagementService/enrollment/getAllEnrollments');
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/enrollment/enrollment/getAllEnrollments`);
       if (!response.ok) {
         throw new Error('Failed to fetch data');
       }
@@ -74,7 +74,7 @@ const AllEnrollments = () => {
     const fetchData = async () => {
       const studentRequests = enrollments.map(async (row) => {
         try {
-          const response = await axios.get(`http://localhost:8800/UserManagementService/student/get/${row.userId}`, {
+          const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/student/get/${row.userId}`, {
             headers: {
               Authorization: `Bearer ${token}` // Replace token with your token variable
             }
@@ -88,7 +88,7 @@ const AllEnrollments = () => {
 
       const courseRequests = enrollments.map(async (row) => {
         try {
-          const response = await axios.get(`http://localhost:8800/CourseManagementService/course/getCourse/${row.courseId}`);
+          const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/getCourse/${row.courseId}`);
           return { courseId: row.courseId, data: response.data.course };
         } catch (error) {
           console.error('Error fetching course data:', error);
@@ -126,7 +126,7 @@ const AllEnrollments = () => {
 
   const handleStatusChange = async (enrollmentId, newStatus) => {
     try {
-      await axios.put(`http://localhost:8800/EnrollmentManagementService/enrollment/updateStatus/${enrollmentId}`, { status: newStatus });
+      await axios.put(`${process.env.REACT_APP_BASE_URL}/enrollment/enrollment/updateStatus/${enrollmentId}`, { status: newStatus });
       // Update the status in the frontend
       const updatedEnrollments = enrollments.map(enrollment =>
         enrollment._id === enrollmentId ? { ...enrollment, status: newStatus } : enrollment

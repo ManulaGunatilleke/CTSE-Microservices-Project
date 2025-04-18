@@ -12,7 +12,7 @@ const useCreateEnrollment = () => {
 
             // Send course data along with image URL
             const response = await axios.post(
-                "http://localhost:8800/EnrollmentManagementService/enrollment/createEnrollment",
+                `${process.env.REACT_APP_BASE_URL}/enrollment/enrollment/createEnrollment`,
                 {
                     userId,
                     courseId,

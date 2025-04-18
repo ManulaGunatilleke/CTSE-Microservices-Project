@@ -11,7 +11,7 @@ const useFetchInstructorDetails = (userId, searchTerm) => {
         const fetchInstructorDetails = async () => {
             try {
                 if(!token) return;
-                const response = await axios.get(`http://localhost:8800/UserManagementService/instructor/get/${userId}`, {
+                const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/instructor/get/${userId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -30,9 +30,9 @@ const useFetchInstructorDetails = (userId, searchTerm) => {
         const fetchallInstructorDetails = async () => {
             try {
                 if (!token) return;
-                let url = 'http://localhost:8800/UserManagementService/instructor';
+                let url = `${process.env.REACT_APP_BASE_URL}/user/instructor`;
                 if (searchTerm) {
-                    url = `http://localhost:8800/UserManagementService/instructor/search/${searchTerm}`;
+                    url = `${process.env.REACT_APP_BASE_URL}/user/instructor/search/${searchTerm}`;
                 }
                 const responses = await axios.get(url, {
                     headers: {
