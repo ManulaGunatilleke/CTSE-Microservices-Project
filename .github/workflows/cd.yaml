@@ -44,7 +44,10 @@ jobs:
           ENVIRONMENT="development"
         fi
         echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
-        echo "namespace=$ENVIRONMENT" >> $GITHUB_OUTPUT
+        
+        # Always use test-ingress namespace regardless of environment
+        echo "namespace=test-ingress" >> $GITHUB_OUTPUT
+        
         if [[ "$ENVIRONMENT" == "production" ]]; then
           echo "values_suffix=prod" >> $GITHUB_OUTPUT
         else
@@ -60,9 +63,28 @@ jobs:
           echo "value=${{ secrets.DEV_KUBE_CONFIG }}" >> $GITHUB_OUTPUT
         fi
 
+    - name: Debug kubeconfig format
+      run: |
+        # Check if the kubeconfig is valid base64
+        echo "${{ steps.kubeconfig.outputs.value }}" | base64 -d > /dev/null 2>&1 || echo "Warning: kubeconfig is not valid base64"
+      continue-on-error: true
+
     - name: Decode kubeconfig
       run: |
         echo "${{ steps.kubeconfig.outputs.value }}" | base64 -d > kubeconfig
+      
+    - name: Validate kubeconfig
+      run: |
+        # Check if file exists and is not empty
+        if [ ! -s kubeconfig ]; then
+          echo "Error: kubeconfig file is empty or does not exist"
+          exit 1
+        fi
+        
+        # Check if the file is valid YAML
+        cat kubeconfig | grep -q "apiVersion:" || echo "Warning: kubeconfig might not be valid, missing apiVersion"
+        cat kubeconfig | grep -q "kind:" || echo "Warning: kubeconfig might not be valid, missing kind"
+      continue-on-error: true
 
     - name: Configure kubectl
       uses: azure/k8s-set-context@v3
@@ -152,3 +174,10 @@ jobs:
           --values ./learning-platform/values.yaml \
           --values ./learning-platform/values-${{ steps.env.outputs.values_suffix }}.yaml \
           --values values-runtime.yaml
+      
+    - name: Verify deployment
+      run: |
+        kubectl get pods -n ${{ steps.env.outputs.namespace }}
+        kubectl get services -n ${{ steps.env.outputs.namespace }}
+      continue-on-error: true
+
