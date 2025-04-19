@@ -148,13 +148,17 @@ jobs:
           if helm list --all-namespaces | grep -q "learning-platform"; then
             echo "Release exists, upgrading..."
             helm upgrade learning-platform ./learning-platform \
+              --namespace test-ingress \
               --values ./learning-platform/values.yaml \
               --values values-runtime.yaml
+
           else
             echo "Release not found, installing..."
             helm install learning-platform ./learning-platform \
+              --namespace test-ingress \
               --values ./learning-platform/values.yaml \
               --values values-runtime.yaml
+
           fi
 
       - name: Verify deployment
