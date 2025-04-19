@@ -29,7 +29,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Determine environment
+      - name: Determine environment and namespace
         id: env
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -39,7 +39,9 @@ jobs:
           else
             ENVIRONMENT="development"
           fi
+          NAMESPACE="learning-platform-${ENVIRONMENT}"
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
 
       - name: Get SHA
         id: vars
@@ -77,7 +79,6 @@ jobs:
       - name: Generate values-runtime.yaml
         run: |
           cat > values-runtime.yaml << EOF
-          namespace:test-ingress
           common:
             registry: ${{ secrets.DOCKERHUB_USERNAME }}
             imagePullPolicy: Always
@@ -142,23 +143,26 @@ jobs:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
           cd learning-platform
-          if helm list -n default | grep -q learning-platform; then
+          NAMESPACE=${{ steps.env.outputs.namespace }}
+          if helm list -n $NAMESPACE | grep -q learning-platform; then
             echo "Upgrading existing release..."
             helm upgrade learning-platform . \
-              --namespace test-ingress \
+              --namespace $NAMESPACE \
               --values values.yaml \
               --values ../values-runtime.yaml
           else
             echo "Installing new release..."
             helm install learning-platform . \
-              --namespace test-ingress \
+              --namespace $NAMESPACE \
+              --create-namespace \
               --values values.yaml \
               --values ../values-runtime.yaml
           fi
-          
+
       - name: Verify deployment
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
-          kubectl get pods -n test-ingress
-          kubectl get services -n test-ingress
+          NAMESPACE=${{ steps.env.outputs.namespace }}
+          kubectl get pods -n $NAMESPACE
+          kubectl get services -n $NAMESPACE
