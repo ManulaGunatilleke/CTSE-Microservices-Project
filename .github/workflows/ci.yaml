@@ -12,8 +12,6 @@ jobs:
     strategy:
       matrix:
         service: [
-          {name: 'client', dir: './client'}, 
-          {name: 'api-gateway', dir: './api-gateway'},
           {name: 'user-management', dir: './UserManagementService'},
           {name: 'course-management', dir: './CourseManagementService'},
           {name: 'payment-management', dir: './PaymentManagementService'},
@@ -49,8 +47,6 @@ jobs:
     strategy:
       matrix:
         service: [
-          {name: 'client', dir: './client'}, 
-          {name: 'api-gateway', dir: './api-gateway'},
           {name: 'user-management', dir: './UserManagementService'},
           {name: 'course-management', dir: './CourseManagementService'},
           {name: 'payment-management', dir: './PaymentManagementService'},

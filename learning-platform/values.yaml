@@ -1,5 +1,5 @@
 # Default values for learning-platform
-namespace: test-ingress
+namespace:
 
 # Common configurations
 common:
@@ -10,69 +10,16 @@ common:
 # Domain configuration
 domain: akslerningplatform.eastus.cloudapp.azure.com
 
-# Ingress configuration
 ingress:
   enabled: true
+  className: webapprouting.kubernetes.azure.com  # or nginx, or whatever your ingress class is
   annotations:
-    kubernetes.io/ingress.class: webapprouting.kubernetes.azure.com
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 
 # Microservices configuration
 services:
-  client:
-    name: client
-    image: client
-    tag: latest
-    port: 3000
-    targetPort: 3000
-    path: /client(/|$)(.*)
-    replicas: 1
-    enabled: true
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
-    secrets:
-      enabled: true
-      data:
-        REACT_APP_BACKEND_URL: "http://api-gateway.test-ingress.svc.cluster.local"
-        REACT_APP_EMAILJS_SERVICE_ID: "dummy-service-id"
-        REACT_APP_EMAILJS_TEMPLATE_ID: "dummy-template-id"
-        REACT_APP_EMAILJS_USER_ID: "dummy-user-id"
-        REACT_APP_FIREBASE_API_KEY: "dummy-api-key"
-        REACT_APP_FIREBASE_APP_ID: "dummy-app-id"
-        REACT_APP_FIREBASE_AUTH_DOMAIN: "dummy-auth-domain"
-        REACT_APP_FIREBASE_MEASUREMENT_ID: "dummy-measurement-id"
-        REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "dummy-sender-id"
-        REACT_APP_FIREBASE_PROJECT_ID: "dummy-project-id"
-        REACT_APP_FIREBASE_STORAGE_BUCKET: "dummy-storage-bucket"
-        
-  apiGateway:
-    name: api-gateway
-    image: api-gateway
-    tag: latest
-    port: 3000
-    targetPort: 3000
-    path: /api(/|$)(.*)
-    replicas: 1
-    enabled: true
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
-    secrets:
-      enabled: true
-      data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
-        
   userManagement:
     name: user-management
     image: user-management
@@ -92,8 +39,11 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
-        
+        MONGODB_URL: ""
+        JWT_SECRET: "your_fallback_secret"
+        SESSION_SECRET: "Your_Secret_Token"
+        NODE_ENV: "production"
+
   courseManagement:
     name: course-management
     image: course-management
@@ -113,7 +63,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         
   paymentManagement:
     name: payment-management
@@ -134,7 +84,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         
   enrollmentManagement:
     name: enrollment-management
@@ -155,4 +105,4 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
