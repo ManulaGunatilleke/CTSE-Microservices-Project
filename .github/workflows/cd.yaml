@@ -152,9 +152,11 @@ jobs:
               --values ../values-runtime.yaml
           else
             echo "Installing new release..."
+            # Create namespace first if it doesn't exist
+            kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+            # Then install without the --create-namespace flag
             helm install learning-platform . \
               --namespace $NAMESPACE \
-              --create-namespace \
               --values values.yaml \
               --values ../values-runtime.yaml
           fi
