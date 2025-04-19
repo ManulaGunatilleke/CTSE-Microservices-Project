@@ -140,26 +140,11 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
-          helm version
-
-          echo "Existing Helm releases:"
-          helm list --all-namespaces || echo "No releases found"
-
-          if helm list --all-namespaces | grep -q "learning-platform"; then
-            echo "Release exists, upgrading..."
-            helm upgrade learning-platform ./learning-platform \
-              --namespace test-ingress \
-              --values ./learning-platform/values.yaml \
-              --values values-runtime.yaml
-
-          else
-            echo "Release not found, installing..."
-            helm install learning-platform ./learning-platform \
-              --namespace test-ingress \
-              --values ./learning-platform/values.yaml \
-              --values values-runtime.yaml
-
-          fi
+          cd learning-platform
+          helm upgrade --install learning-platform . \
+            --namespace test-ingress \
+            --values values.yaml \
+            --values ../values-runtime.yaml
 
       - name: Verify deployment
         env:
