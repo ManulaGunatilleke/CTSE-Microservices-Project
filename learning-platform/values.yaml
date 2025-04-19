@@ -1,5 +1,5 @@
 # Default values for learning-platform
-namespace: test-ingress
+namespace: 
 
 # Common configurations
 common:
