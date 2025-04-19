@@ -12,6 +12,9 @@ const session = require('express-session');
 // const passportStrategy = require("./passport");
 const cors = require("cors");
 
+
+// Frontend Url
+
 app.use(
 	cors({
 		origin: "http://a70714adea18c40339e551c24252cf47-34542496.ap-southeast-1.elb.amazonaws.com:3000/",
