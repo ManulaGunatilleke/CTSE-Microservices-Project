@@ -150,7 +150,7 @@ jobs:
               --namespace $NAMESPACE \
               --values values.yaml \
               --values ../values-runtime.yaml \
-              --force
+              --atomic
           else
             echo "Installing new release..."
             # Create namespace first if it doesn't exist
