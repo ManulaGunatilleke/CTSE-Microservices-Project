@@ -79,6 +79,8 @@ jobs:
       - name: Generate values-runtime.yaml
         run: |
           cat > values-runtime.yaml << EOF
+          namespace: test-ingress
+      
           common:
             registry: ${{ secrets.DOCKERHUB_USERNAME }}
             imagePullPolicy: Always
