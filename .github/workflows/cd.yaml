@@ -150,25 +150,24 @@ jobs:
           
           echo "Directory contents:"
           ls -l
-          NAMESPACE=${{ steps.env.outputs.namespace }}
-          if helm list -n $NAMESPACE | grep -q learning-platform; then
-            helm list --all-namespaces
-            echo "Upgrading existing release..."
-            helm upgrade --install learning-platform . \
-              --namespace $NAMESPACE \
-              --values values.yaml \
-              --values ../values-runtime.yaml
-
-          else
-            echo "Installing new release..."
-            # Create namespace first if it doesn't exist
-            kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
-            # Then install without the --create-namespace flag
-            helm install learning-platform . \
-              --namespace $NAMESPACE \
-              --values values.yaml \
-              --values ../values-runtime.yaml
+          
+          NAMESPACE=default
+          RELEASE_NAME=learning-platform
+          
+          # Check if the release exists
+          if helm status $RELEASE_NAME -n $NAMESPACE > /dev/null 2>&1; then
+            echo "Deleting existing release (if failed or broken)..."
+            helm uninstall $RELEASE_NAME -n $NAMESPACE || true
+            sleep 5
           fi
+          
+          # Install fresh release
+          echo "Installing new release..."
+          helm install $RELEASE_NAME . \
+            --namespace $NAMESPACE \
+            --values values.yaml \
+            --values ../values-runtime.yaml
+
 
       - name: Verify deployment
         env:
