@@ -152,6 +152,7 @@ jobs:
           ls -l
           NAMESPACE=${{ steps.env.outputs.namespace }}
           if helm list -n $NAMESPACE | grep -q learning-platform; then
+            helm list --all-namespaces
             echo "Upgrading existing release..."
             helm upgrade learning-platform . --values values.yaml
           else
