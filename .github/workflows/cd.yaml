@@ -146,10 +146,11 @@ jobs:
           NAMESPACE=${{ steps.env.outputs.namespace }}
           if helm list -n $NAMESPACE | grep -q learning-platform; then
             echo "Upgrading existing release..."
-            helm upgrade learning-platform . \
+            helm upgrade --install learning-platform . \
               --namespace $NAMESPACE \
               --values values.yaml \
-              --values ../values-runtime.yaml
+              --values ../values-runtime.yaml \
+              --force
           else
             echo "Installing new release..."
             # Create namespace first if it doesn't exist
