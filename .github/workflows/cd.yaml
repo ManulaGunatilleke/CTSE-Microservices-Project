@@ -151,8 +151,7 @@ jobs:
             helm upgrade --install learning-platform . \
               --namespace $NAMESPACE \
               --values values.yaml \
-              --values ../values-runtime.yaml \
-              --atomic
+              --values ../values-runtime.yaml
           else
             echo "Installing new release..."
             # Create namespace first if it doesn't exist
