@@ -39,7 +39,7 @@ jobs:
           else
             ENVIRONMENT="development"
           fi
-          NAMESPACE="test-ingress"
+          NAMESPACE="default"
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
 
