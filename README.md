@@ -1,5 +1,6 @@
-#Manage -  Educational Platform for Online Learning
-This website is included as a website where students can gain knowledge through various courses in management. Instructors can manage and add students to share their knowledge and explore the knowledge space of everyday things that was built for the Current Trends in Software Engineering (SE4010) Module in the 2nd Semester of the 4th Year of the BSc. in IT (Specializing in Software Engineering) degree program..
+# Manage -  Educational Platform for Online Learning
+
+This website is included as a website where students can gain knowledge through various courses in management. Instructors can manage and add students to share their knowledge and explore the knowledge space of everyday things that was built for the Current Trends in Software Engineering (SE4010) Module in the 2nd Semester of the 4th Year of the BSc. in IT (Specializing in Software Engineering) degree program.
 
 <h2>CTSE Assignment - Group 49</h2>
 <p>A full Backend and Frontend implementation of Manage which is a website where users can login as students or instructors. The students can view all the courses that are submitted by the instructors, they can enroll themselves to the course and for that they need to make the payment via Stripe. Once the payment is done, they will enrolled to the course after administrator approval. The instructors can create specific courses to share their knowledge among the students and they can also update and delete the courses accordingly. The users can also view their user profiles and manage them.
