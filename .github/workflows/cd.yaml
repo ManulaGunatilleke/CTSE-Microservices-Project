@@ -58,9 +58,9 @@ jobs:
       - name: Create kubeconfig file
         run: |
           if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
-            echo "${{ secrets.PROD_KUBE_CONFIG }}" | base64 -d > ${{ github.workspace }}/kubeconfig
+            echo -n "${{ secrets.PROD_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
           else
-            echo "${{ secrets.DEV_KUBE_CONFIG }}" | base64 -d > ${{ github.workspace }}/kubeconfig
+            echo -n "${{ secrets.DEV_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
           fi
 
       - name: Validate kubeconfig
