@@ -154,7 +154,10 @@ jobs:
           if helm list -n $NAMESPACE | grep -q learning-platform; then
             helm list --all-namespaces
             echo "Upgrading existing release..."
-            helm upgrade learning-platform . --values values.yaml
+            helm install learning-platform . \
+              --namespace $NAMESPACE \
+              --values values.yaml \
+              --values ../values-runtime.yaml
           else
             echo "Installing new release..."
             # Create namespace first if it doesn't exist
