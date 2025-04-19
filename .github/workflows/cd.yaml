@@ -141,12 +141,20 @@ jobs:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
           cd learning-platform
-          helm uninstall learning-platform --namespace default || true
-          helm upgrade --install learning-platform . \
-            --namespace default \
-            --values values.yaml \
-            --values ../values-runtime.yaml
-
+          if helm list -n default | grep -q learning-platform; then
+            echo "Upgrading existing release..."
+            helm upgrade learning-platform . \
+              --namespace default \
+              --values values.yaml \
+              --values ../values-runtime.yaml
+          else
+            echo "Installing new release..."
+            helm install learning-platform . \
+              --namespace default \
+              --values values.yaml \
+              --values ../values-runtime.yaml
+          fi
+          
       - name: Verify deployment
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
