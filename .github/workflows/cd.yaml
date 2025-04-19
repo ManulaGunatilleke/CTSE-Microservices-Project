@@ -145,6 +145,11 @@ jobs:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
           cd learning-platform
+          echo "Current directory:"
+          pwd
+          
+          echo "Directory contents:"
+          ls -l
           NAMESPACE=${{ steps.env.outputs.namespace }}
           if helm list -n $NAMESPACE | grep -q learning-platform; then
             echo "Upgrading existing release..."
