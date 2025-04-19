@@ -12,7 +12,7 @@ const session = require('express-session');
 //const passportStrategy = require("./passport");
 const cors = require("cors");
 
-
+// Frontend Url
 app.use(
 	cors({
 		origin: "http://localhost:3000",
