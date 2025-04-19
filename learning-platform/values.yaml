@@ -1,5 +1,5 @@
 # Default values for learning-platform
-namespace: 
+namespace:
 
 # Common configurations
 common:
@@ -10,11 +10,10 @@ common:
 # Domain configuration
 domain: akslerningplatform.eastus.cloudapp.azure.com
 
-# Ingress configuration
 ingress:
   enabled: true
+  className: webapprouting.kubernetes.azure.com  # or nginx, or whatever your ingress class is
   annotations:
-    kubernetes.io/ingress.class: webapprouting.kubernetes.azure.com
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -40,7 +39,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         JWT_SECRET: "your_fallback_secret"
         SESSION_SECRET: "Your_Secret_Token"
         NODE_ENV: "production"
@@ -64,7 +63,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         
   paymentManagement:
     name: payment-management
@@ -85,7 +84,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         
   enrollmentManagement:
     name: enrollment-management
@@ -106,4 +105,4 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
