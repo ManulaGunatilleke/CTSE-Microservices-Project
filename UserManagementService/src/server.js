@@ -5,35 +5,43 @@ require("dotenv").config();
 const connectToDatabase = require('./config/database');
 const { authenticate } = require("./middleware/authMiddleware");
 const helmet = require("helmet"); // use helmet package for secure csp policy
-
-//const passport = require("passport");
+const MongoStore = require('connect-mongo'); 
+// const passport = require("passport");
 //const cookieSession = require("cookie-session");
 const session = require('express-session');
-//const passportStrategy = require("./passport");
+// const passportStrategy = require("./passport");
 const cors = require("cors");
-
 
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: "http://a70714adea18c40339e551c24252cf47-34542496.ap-southeast-1.elb.amazonaws.com:3000/",
 		methods: "GET,POST,PUT,DELETE",
 		credentials: true,
 	})
 );
 
 
+// Session configuration with MongoDB store
 app.use(
-    session({
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: { secure: false } // Set `true` for HTTPS
+  session({
+    secret: process.env.SESSION_SECRET || 'your_fallback_secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: process.env.NODE_ENV === "production" ? true : false, // Set true for HTTPS in production
+      httpOnly: true, // Make cookies accessible only by the web server
+      maxAge: 24 * 60 * 60 * 1000 // 1 day in milliseconds (adjust as needed)
+    },
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URL, // MongoDB URL for session storage
+      ttl: 1 * 24 * 60 * 60 // 14 days session expiration time
     })
-  );
+  })
+);
   
-  // Initialize Passport and session handling
-  //app.use(passport.initialize());
-  //app.use(passport.session());
+// Initialize Passport and session handling
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 
 //Initializing the port number
@@ -44,7 +52,7 @@ app.disable("X-Powered-By");
 
 // Cross-Domain Misconfiguration
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://a70714adea18c40339e551c24252cf47-34542496.ap-southeast-1.elb.amazonaws.com:3000/',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -113,6 +121,3 @@ app.use('/authenticate-role', authenticateRole);
 // auth routes
 // const googleauthRouter = require('./routes/googleRoutes');
 // app.use('/google-auth',googleauthRouter);
-
-
-
