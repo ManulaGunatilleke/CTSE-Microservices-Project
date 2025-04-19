@@ -1,29 +1,41 @@
 Thank you for installing {{ .Chart.Name }}.
 
-Your application is now deploying in namespace: {{ .Values.namespace }}
+Your application is now deploying in namespace: {{ .Values.namespace | default "default" }}
 
 Application URLs:
 {{- if .Values.ingress.enabled }}
-Main application: http://{{ .Values.domain }}
-API Gateway: http://{{ .Values.domain }}{{ .Values.services.apiGateway.path | replace "(/|$)(.*)" "" }}
-User Management: http://{{ .Values.domain }}{{ .Values.services.userManagement.path | replace "(/|$)(.*)" "" }}
-Course Management: http://{{ .Values.domain }}{{ .Values.services.courseManagement.path | replace "(/|$)(.*)" "" }}
-Payment Management: http://{{ .Values.domain }}{{ .Values.services.paymentManagement.path | replace "(/|$)(.*)" "" }}
-Enrollment Management: http://{{ .Values.domain }}{{ .Values.services.enrollmentManagement.path | replace "(/|$)(.*)" "" }}
+
+Main application: http://{{ .Values.domain | default "example.com" }}
+
+{{- $apiPath := default "/" .Values.services.apiGateway.path | toString }}
+API Gateway: http://{{ .Values.domain | default "example.com" }}{{ $apiPath | replace "(/|$)(.*)" "" }}
+
+{{- $userPath := default "/" .Values.services.userManagement.path | toString }}
+User Management: http://{{ .Values.domain | default "example.com" }}{{ $userPath | replace "(/|$)(.*)" "" }}
+
+{{- $coursePath := default "/" .Values.services.courseManagement.path | toString }}
+Course Management: http://{{ .Values.domain | default "example.com" }}{{ $coursePath | replace "(/|$)(.*)" "" }}
+
+{{- $paymentPath := default "/" .Values.services.paymentManagement.path | toString }}
+Payment Management: http://{{ .Values.domain | default "example.com" }}{{ $paymentPath | replace "(/|$)(.*)" "" }}
+
+{{- $enrollmentPath := default "/" .Values.services.enrollmentManagement.path | toString }}
+Enrollment Management: http://{{ .Values.domain | default "example.com" }}{{ $enrollmentPath | replace "(/|$)(.*)" "" }}
+
 {{- else }}
 To access your services from outside the cluster, you will need to set up port-forwarding:
 
 For the client application:
-  kubectl port-forward -n {{ .Values.namespace }} service/{{ .Values.services.client.name }} 8080:{{ .Values.services.client.port }}
+  kubectl port-forward -n {{ .Values.namespace | default "default" }} service/{{ .Values.services.client.name }} 8080:{{ .Values.services.client.port }}
   Then visit: http://localhost:8080
 
 For the API Gateway:
-  kubectl port-forward -n {{ .Values.namespace }} service/{{ .Values.services.apiGateway.name }} 8081:{{ .Values.services.apiGateway.port }}
+  kubectl port-forward -n {{ .Values.namespace | default "default" }} service/{{ .Values.services.apiGateway.name }} 8081:{{ .Values.services.apiGateway.port }}
   Then visit: http://localhost:8081
 {{- end }}
 
 To check the status of your pods:
-  kubectl get pods -n {{ .Values.namespace }}
+  kubectl get pods -n {{ .Values.namespace | default "default" }}
 
 To check the logs of a specific service (e.g., client):
-  kubectl logs -f -n {{ .Values.namespace }} deployment/{{ .Values.services.client.name }}
+  kubectl logs -f -n {{ .Values.namespace | default "default" }} deployment/{{ .Values.services.client.name }}
