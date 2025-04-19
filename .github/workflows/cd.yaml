@@ -141,10 +141,9 @@ jobs:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
           cd learning-platform
-          helm uninstall learning-platform --namespace test-ingress || true
+          helm uninstall learning-platform --namespace default || true
           helm upgrade --install learning-platform . \
-            --namespace test-ingress \
-            --create-namespace \
+            --namespace default \
             --values values.yaml \
             --values ../values-runtime.yaml
 
