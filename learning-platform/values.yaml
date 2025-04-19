@@ -1,5 +1,5 @@
 # Default values for learning-platform
-namespace: test-ingress
+namespace:
 
 # Common configurations
 common:
@@ -10,11 +10,10 @@ common:
 # Domain configuration
 domain: akslerningplatform.eastus.cloudapp.azure.com
 
-# Ingress configuration
 ingress:
   enabled: true
+  className: webapprouting.kubernetes.azure.com  # or nginx, or whatever your ingress class is
   annotations:
-    kubernetes.io/ingress.class: webapprouting.kubernetes.azure.com
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
