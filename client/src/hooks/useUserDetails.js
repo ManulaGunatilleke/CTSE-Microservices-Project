@@ -13,7 +13,7 @@ const useFetchUserDetails = (userId, searchTerm) => {
                 console.log("Fetching user details...");
                 console.log("Token:", token);
                 if (!token) return;
-                const response = await axios.get(`http://localhost:8800/UserManagementService/student/get/${userId}`, {
+                const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/student/get/${userId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -32,9 +32,9 @@ const useFetchUserDetails = (userId, searchTerm) => {
         const fetchallUserDetails = async () => {
             try {
                 if (!token) return;
-                let url = 'http://localhost:8800/UserManagementService/student';
+                let url = `${process.env.REACT_APP_BASE_URL}/user/student`;
                 if (searchTerm) {
-                    url = `http://localhost:8800/UserManagementService/student/search/${searchTerm}`;
+                    url = `${process.env.REACT_APP_BASE_URL}/user/student/search/${searchTerm}`;
                 }
                 const response = await axios.get(url, {
                     headers: {

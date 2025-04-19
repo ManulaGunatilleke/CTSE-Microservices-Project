@@ -12,7 +12,7 @@ const useViewCourseById = () => {
 
     const viewOneCourseById = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:8800/CourseManagementService/course/getCourse/${id}`,
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/getCourse/${id}`,
                 { headers }
             );
             console.log(response.data.course);

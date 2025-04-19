@@ -17,7 +17,7 @@ const GoogleComponent = () => {
 
     if (token) {
       // Send a request to validate the token
-      axios.post(`http://localhost:8800/UserManagementService/auth/validate-token`, { token })
+      axios.post(`${process.env.REACT_APP_BASE_URL}/user/auth/validate-token`, { token })
         .then(response => {
           if (response.status === 200) {
             // Successful login

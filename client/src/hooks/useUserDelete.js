@@ -12,7 +12,7 @@ const useDeleteUser = () => {
             }
 
             if (window.confirm("Are you sure that you want to delete this Student?")) {
-                const response = await axios.delete(`http://localhost:8800/UserManagementService/student/delete/${id}`, {
+                const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/user/student/delete/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

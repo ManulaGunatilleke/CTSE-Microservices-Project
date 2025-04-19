@@ -11,7 +11,7 @@ const useManageCourse = () => {
 
     const getCourses = async () => {
         try {
-            const response = await axios.get(`http://localhost:8800/CourseManagementService/course/publishedCourses`);
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/publishedCourses`);
             if (response.status === 200) {
                 setCourses(response.data);
             }
@@ -24,7 +24,7 @@ const useManageCourse = () => {
         setSearchTerm(key);
         if (key) {
             try {
-                const result = await axios.get(`http://localhost:8800/CourseManagementService/course/searchCourse/${key}`);
+                const result = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/searchCourse/${key}`);
                 if (result.status === 200) {
                     setCourses(result.data);
                 }
@@ -38,7 +38,7 @@ const useManageCourse = () => {
 
     const deleteCourse = async (courseId) => {
         try {
-            const response = await axios.delete(`http://localhost:8800/CourseManagementService/course/deleteCourse/${courseId}`);
+            const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/course/course/deleteCourse/${courseId}`);
             if (response.status === 200) {
                 setCourses(courses.filter(course => course.id !== courseId));
                 alert("Course Deletion Successfully..!")

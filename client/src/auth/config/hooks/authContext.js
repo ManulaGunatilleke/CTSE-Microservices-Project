@@ -10,7 +10,7 @@ const useAuth = () => {
 
     const studentSignup = async (Fullname, Email, Password) => {
         try {
-            const response = await axios.post('http://localhost:8800/UserManagementService/auth/registerStudent', {
+            const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/user/auth/registerStudent`, {
                 Fullname,
                 Email,
                 Password
@@ -28,7 +28,7 @@ const useAuth = () => {
 
     const instructorSignup = async (Instructorname, Email, Password) => {
         try {
-            const response = await axios.post('http://localhost:8800/UserManagementService/auth/registerInstructor',{
+            const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/user/auth/registerInstructor`,{
                 Instructorname,
                 Email,
                 Password
@@ -46,7 +46,7 @@ const useAuth = () => {
 
     const login = async (Email, Password) => {
         try {
-            const response = await axios.post('http://localhost:8800/UserManagementService/auth/login', {
+            const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/user/auth/login`, {
                 Email,
                 Password
             });
