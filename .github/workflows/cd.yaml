@@ -6,7 +6,7 @@ on:
     types:
       - completed
     branches: [main, develop]
-  
+
   workflow_dispatch:
     inputs:
       environment:
@@ -24,117 +24,152 @@ jobs:
       (github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Determine environment and namespace
+        id: env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "main" ]]; then
+            ENVIRONMENT="production"
+          else
+            ENVIRONMENT="development"
+          fi
+          NAMESPACE="default"
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
+
+      - name: Get SHA
+        id: vars
+        run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Create kubeconfig file
+        run: |
+          if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
+            echo -n "${{ secrets.PROD_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
+          else
+            echo -n "${{ secrets.DEV_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
+          fi
+
+      - name: Validate kubeconfig
+        run: |
+          if [ ! -s ${{ github.workspace }}/kubeconfig ]; then
+            echo "Error: kubeconfig file is empty or does not exist"
+            exit 1
+          fi
+          grep -q "apiVersion:" ${{ github.workspace }}/kubeconfig || { echo "Error: kubeconfig invalid, missing apiVersion"; exit 1; }
+          grep -q "kind:" ${{ github.workspace }}/kubeconfig || { echo "Error: kubeconfig invalid, missing kind"; exit 1; }
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: 'latest'
+
+      - name: Generate values-runtime.yaml
+        run: |
+          cat > values-runtime.yaml << EOF
+          namespace: test-ingress
       
-    - name: Configure kubectl
-      uses: azure/k8s-set-context@v3
-      with:
-        kubeconfig: ${{ secrets[format('{0}_KUBE_CONFIG', github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'PROD' || 'DEV'))] }}
-    
-    - name: Set up Helm
-      uses: azure/setup-helm@v3
-      with:
-        version: 'latest'
-    
-    - name: Get SHA
-      id: vars
-      run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-      env:
-        GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-    
-    - name: Set environment variables
-      id: env
-      run: |
-        ENVIRONMENT=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
-        NAMESPACE=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'development') }}
-        VALUES_FILE_SUFFIX=${{ github.event.inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prod' || 'dev') }}
-        
-        echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
-        echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
-        echo "values_suffix=$VALUES_FILE_SUFFIX" >> $GITHUB_OUTPUT
-    
-    - name: Deploy to Kubernetes
-      run: |
-        # Generate values file with secrets
-        cat > values-runtime.yaml << EOF
-        namespace: ${{ steps.env.outputs.namespace }}
-        common:
-          registry: ${{ secrets.DOCKERHUB_USERNAME }}
-          imagePullPolicy: Always
-          environment: ${{ steps.env.outputs.environment }}
-        
-        services:
-          client:
-            tag: ${{ steps.vars.outputs.sha }}
-            enabled: true
-            secrets:
+          common:
+            registry: ${{ secrets.DOCKERHUB_USERNAME }}
+            imagePullPolicy: Always
+            environment: ${{ steps.env.outputs.environment }}
+          services:
+            client:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
-              data:
-                REACT_APP_BACKEND_URL: "${{ secrets.REACT_APP_BACKEND_URL }}"
-                REACT_APP_EMAILJS_SERVICE_ID: "${{ secrets.REACT_APP_EMAILJS_SERVICE_ID }}"
-                REACT_APP_EMAILJS_TEMPLATE_ID: "${{ secrets.REACT_APP_EMAILJS_TEMPLATE_ID }}"
-                REACT_APP_EMAILJS_USER_ID: "${{ secrets.REACT_APP_EMAILJS_USER_ID }}"
-                REACT_APP_FIREBASE_API_KEY: "${{ secrets.REACT_APP_FIREBASE_API_KEY }}"
-                REACT_APP_FIREBASE_APP_ID: "${{ secrets.REACT_APP_FIREBASE_APP_ID }}"
-                REACT_APP_FIREBASE_AUTH_DOMAIN: "${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}"
-                REACT_APP_FIREBASE_MEASUREMENT_ID: "${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}"
-                REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}"
-                REACT_APP_FIREBASE_PROJECT_ID: "${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}"
-                REACT_APP_FIREBASE_STORAGE_BUCKET: "${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}"
-                
-          apiGateway:
-            tag: ${{ steps.vars.outputs.sha }}
-            enabled: true
-            secrets:
+              secrets:
+                enabled: true
+                data:
+                  REACT_APP_BACKEND_URL: "${{ secrets.REACT_APP_BACKEND_URL }}"
+                  REACT_APP_EMAILJS_SERVICE_ID: "${{ secrets.REACT_APP_EMAILJS_SERVICE_ID }}"
+                  REACT_APP_EMAILJS_TEMPLATE_ID: "${{ secrets.REACT_APP_EMAILJS_TEMPLATE_ID }}"
+                  REACT_APP_EMAILJS_USER_ID: "${{ secrets.REACT_APP_EMAILJS_USER_ID }}"
+                  REACT_APP_FIREBASE_API_KEY: "${{ secrets.REACT_APP_FIREBASE_API_KEY }}"
+                  REACT_APP_FIREBASE_APP_ID: "${{ secrets.REACT_APP_FIREBASE_APP_ID }}"
+                  REACT_APP_FIREBASE_AUTH_DOMAIN: "${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}"
+                  REACT_APP_FIREBASE_MEASUREMENT_ID: "${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}"
+                  REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}"
+                  REACT_APP_FIREBASE_PROJECT_ID: "${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}"
+                  REACT_APP_FIREBASE_STORAGE_BUCKET: "${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}"
+            apiGateway:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
-              data:
-                MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
-          userManagement:
-            tag: ${{ steps.vars.outputs.sha }}
-            enabled: true
-            secrets:
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            userManagement:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
-              data:
-                MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
-          courseManagement:
-            tag: ${{ steps.vars.outputs.sha }}
-            enabled: true
-            secrets:
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            courseManagement:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
-              data:
-                MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
-          paymentManagement:
-            tag: ${{ steps.vars.outputs.sha }}
-            enabled: true
-            secrets:
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            paymentManagement:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
-              data:
-                MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-                
-          enrollmentManagement:
-            tag: ${{ steps.vars.outputs.sha }}
-            enabled: true
-            secrets:
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            enrollmentManagement:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
-              data:
-                MONGODB_URL: "${{ secrets.MONGODB_URL }}"
-        EOF
-        
-        # Deploy using Helm with values files
-        helm upgrade --install learning-platform ./learning-platform \
-          --namespace ${{ steps.env.outputs.namespace }} \
-          --create-namespace \
-          --values ./learning-platform/values.yaml \
-          --values ./learning-platform/values-${{ steps.env.outputs.values_suffix }}.yaml \
-          --values values-runtime.yaml
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+          EOF
+
+      - name: Deploy to Kubernetes using Helm
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          cd learning-platform
+          echo "Current directory:"
+          pwd
+          
+          echo "Directory contents:"
+          ls -l
+          NAMESPACE=${{ steps.env.outputs.namespace }}
+          if helm list -n $NAMESPACE | grep -q learning-platform; then
+            helm list --all-namespaces
+            echo "Upgrading existing release..."
+            helm upgrade learning-platform . --values values.yaml
+          else
+            echo "Installing new release..."
+            # Create namespace first if it doesn't exist
+            kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+            # Then install without the --create-namespace flag
+            helm install learning-platform . \
+              --namespace $NAMESPACE \
+              --values values.yaml \
+              --values ../values-runtime.yaml
+          fi
+
+      - name: Verify deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          NAMESPACE=${{ steps.env.outputs.namespace }}
+          kubectl get pods -n $NAMESPACE
+          kubectl get services -n $NAMESPACE

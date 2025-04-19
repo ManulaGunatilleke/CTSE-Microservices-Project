@@ -17,7 +17,7 @@ const useEditUserDetails = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:8800/UserManagementService/student/update/${userId}`, {
+            const response = await fetch(`${process.env.REACT_APP_BASE_URL}/user/student/update/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

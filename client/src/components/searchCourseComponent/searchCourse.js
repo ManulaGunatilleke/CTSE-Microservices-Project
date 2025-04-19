@@ -28,7 +28,7 @@ const SearchBar = () => {
 
     const getCourses = async () => {
         try {
-            const response = await axios.get(`http://localhost:8800/CourseManagementService/course/publishedCourses`);
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/publishedCourses`);
             if (response.status === 200) {
                 setCourses(response.data);
             }
@@ -44,7 +44,7 @@ const SearchBar = () => {
     const checkEnrollment = async (courseId) => {
         try {
             console.log("Checking enrollment for courseId:", courseId);
-            const response = await fetch(`http://localhost:8800/EnrollmentManagementService/enrollment/user/${user._id}/course/${courseId}`);
+            const response = await fetch(`${process.env.REACT_APP_BASE_URL}/enrollment/enrollment/user/${user._id}/course/${courseId}`);
             console.log("Status code for courseId", courseId, ":", response.status);
             return response.status === 200; // Returns true if enrolled, false otherwise
         } catch (error) {

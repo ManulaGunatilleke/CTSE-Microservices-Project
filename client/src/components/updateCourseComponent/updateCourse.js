@@ -28,7 +28,7 @@ export default function UpdateCourse() {
     }, [])
 
     const getCourseDetails = async () => {
-        let result = await fetch(`http://localhost:8800/CourseManagementService/course/getCourse/${params.id}`, {
+        let result = await fetch(`${process.env.REACT_APP_BASE_URL}/course/course/getCourse/${params.id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -46,7 +46,7 @@ export default function UpdateCourse() {
     }
 
     const updateCourseDetails = async () => {
-        let result = await fetch(`http://localhost:8800/CourseManagementService/course/updateCourse/${params.id}`, {
+        let result = await fetch(`${process.env.REACT_APP_BASE_URL}/course/course/updateCourse/${params.id}`, {
             method: 'Put',
             body: JSON.stringify({ CourseName, CourseCode, Description, Instructor, Price, Duration, Image, VideoLink }),
             headers: headers

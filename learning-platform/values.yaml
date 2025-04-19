@@ -39,7 +39,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         JWT_SECRET: "your_fallback_secret"
         SESSION_SECRET: "Your_Secret_Token"
         NODE_ENV: "production"
@@ -63,7 +63,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         
   paymentManagement:
     name: payment-management
@@ -84,7 +84,7 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""
         
   enrollmentManagement:
     name: enrollment-management
@@ -105,4 +105,4 @@ services:
     secrets:
       enabled: true
       data:
-        MONGODB_URL: "mongodb+srv://bihesha0822:group123@learningdb.aslw6vw.mongodb.net/Educational_ms_user?retryWrites=true&w=majority&appName=LearningDB"
+        MONGODB_URL: ""

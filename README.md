@@ -1,8 +1,9 @@
-# SecureManage -  Educational Platform for Online Learning
-This website is included as a website where students can gain knowledge through various courses in management. Instructors can manage and add students to share their knowledge and explore the knowledge space of everyday things that was built for the Distributed Systems (DS) module in the second semester of the third year of university and identify the vulnerabilities of the site and improve them. This Repository has been built for the Secure Software Development (SSD) module of the first semester of the fourth year of BSc. in IT degree specialized in Software Engineering program at SLIIT.
+# Manage -  Educational Platform for Online Learning
 
-<h2>SSD Assignment</h2>
-<p>Complete back-end and front-end implementation of Manage, a website where users can log in as students or instructors. Students can view all courses offered by instructors and enroll in the course themselves and pay through Stripe. Some vulnerabilities in the old project we had built were identified using tools like OWASP ZAP, SonarQub and Postman, and then we fixed them and updated them again. 
+This website is included as a website where students can gain knowledge through various courses in management. Instructors can manage and add students to share their knowledge and explore the knowledge space of everyday things that was built for the Current Trends in Software Engineering (SE4010) Module in the 2nd Semester of the 4th Year of the BSc. in IT (Specializing in Software Engineering) degree program.
+
+<h2>CTSE Assignment - Group 49</h2>
+<p>A full Backend and Frontend implementation of Manage which is a website where users can login as students or instructors. The students can view all the courses that are submitted by the instructors, they can enroll themselves to the course and for that they need to make the payment via Stripe. Once the payment is done, they will enrolled to the course after administrator approval. The instructors can create specific courses to share their knowledge among the students and they can also update and delete the courses accordingly. The users can also view their user profiles and manage them.
 <p>The architecture behind Manage is the Microservices architecture which is an architecture that is consisted of small services. All the requests between the client side and the server side is done through the API gateway. Our system has 4 specific microservices,
   <ul>
   <li>User Management System</li>
@@ -12,21 +13,32 @@ This website is included as a website where students can gain knowledge through 
 </ul>
 </p>
 
-<p>Github link to the Original Project : https://github.com/janchilling/DS-Microservices-Project </p>
-<p>Github link to the Modified Project : https://github.com/teshanj7/SecureManage </p>  
-<p>Contribution Video Link : https://www.youtube.com/watch?v=8JFGZR3fo7Y </p>
+System Demonstration Video Link : https://www.youtube.com/watch?v=irYGMlJKooo
+
 
 <h2>Contributors & Contribution</h2>
 <ul>
-  <li>IT21321436 - Manula Gunatilleke - Vulnerabilities related to Enrollment Management Service</li>
-  <li>IT21345296 - Teshan Jayakody - Vulnerabilities related to Course Management Service</li>
-  <li>IT21343216 - Bihesha Dilshan - Vulnerabilities related to User Management Service</li>
-  <li>IT21338052 - Keshan Pathirana - Vulnerabilities related to Payment Management Service</li>
+  <li>IT21321436 - Manula Gunatilleke - Enrollment Management Service and UI's</li>
+  <li>IT21345296 - Teshan Jayakody - Course Management Service and UI's</li>
+  <li>IT21343216 - Bihesha Dilshan - User Management Service and UI's</li>
+  <li>IT21338052 - Keshan Pathirana - Payment Management Service and UI's</li>
 </ul>
 
-<h2>Technologies Used to Identify Vulnerabilities :</h2>
+<h2>Setup Instructions</h2>
 <ul>
-  <li>OWSAP ZAP</li>
-  <li>SonarQub</li>
-  <li>Postman</li>
+  <li>Clone the project, open the folder in the command prompt and give the command "code ."</li>
+  <li>To Install all the Node Modules: npm install </li>
+  <li>Specific Node Packages used : express, mongoose, bodyParser, cors, dotenv, jsonwebtoken, bcrypt, emailjs, nodemon, jest, bootstrap, react-toastify</li>
+  <li>Since the Services are dockerized, build by: docker-compose up --build</li>
+  <li>After the build is successful, access the specific port; localhost:3000</li>
+</ul>
+
+<h2>Technologies Used :</h2>
+<ul>
+  <li>MERN Stack: MongoDB, Express, React, Node</li>
+  <li>CSS Frameworks: Tailwind CSS, Material UI</li>
+  <li>API Testing: Postman</li>
+  <li>IDE : Visual Studio Code</li>
+  <li>Containerization: Docker</li>
+  <li>Container Orchestration System : Kubernetes</li>
 </ul>

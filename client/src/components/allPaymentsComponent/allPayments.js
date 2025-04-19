@@ -47,7 +47,7 @@ const AllPayments = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8800/PaymentManagementService/payment/getAllPayments');
+        const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/payment/payment/getAllPayments`);
         setPayments(response.data);
       } catch (error) {
         console.error('Error fetching payments:', error);
@@ -61,7 +61,7 @@ const AllPayments = () => {
     const fetchStudentAndCourseData = async () => {
       try {
         const studentRequests = payments.map(async (payment) => {
-          const studentResponse = await axios.get(`http://localhost:8800/UserManagementService/student/get/${payment.UserId}`, {
+          const studentResponse = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/student/get/${payment.UserId}`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -70,7 +70,7 @@ const AllPayments = () => {
         });
   
         const courseRequests = payments.map(async (payment) => {
-          const courseResponse = await axios.get(`http://localhost:8800/CourseManagementService/course/getCourse/${payment.CourseId}`);
+          const courseResponse = await axios.get(`${process.env.REACT_APP_BASE_URL}/course/course/getCourse/${payment.CourseId}`);
           return { courseId: payment.CourseId, data: courseResponse.data.course };
         });
   
