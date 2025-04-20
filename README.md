@@ -40,5 +40,5 @@ System Demonstration Video Link : https://www.youtube.com/watch?v=irYGMlJKooo
   <li>API Testing: Postman</li>
   <li>IDE : Visual Studio Code</li>
   <li>Containerization: Docker</li>
-  <li>Container Orchestration System : Kubernetes</li>
+  <li>Container Orchestration System : Kubernetes(AKS)</li>
 </ul>
