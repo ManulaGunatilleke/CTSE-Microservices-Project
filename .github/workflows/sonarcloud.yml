@@ -1,0 +1,55 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies - client
+        run: |
+          cd client
+          npm ci
+
+      - name: Install dependencies - CourseManagementService
+        run: |
+          cd CourseManagementService
+          npm ci
+
+      - name: Install dependencies - EnrollmentManagementService
+        run: |
+          cd EnrollmentManagementService
+          npm ci
+
+      - name: Install dependencies - PaymentManagementService
+        run: |
+          cd PaymentManagementService
+          npm ci
+
+      - name: Install dependencies - UserManagementService
+        run: |
+          cd UserManagementService
+          npm ci
+
+      - name: Run SonarCloud analysis
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
