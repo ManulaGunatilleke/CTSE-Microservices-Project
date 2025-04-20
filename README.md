@@ -36,9 +36,9 @@ System Demonstration Video Link : https://www.youtube.com/watch?v=irYGMlJKooo
 <h2>Technologies Used :</h2>
 <ul>
   <li>MERN Stack: MongoDB, Express, React, Node</li>
-  <li>CSS Frameworks: Tailwind CSS, Material UI</li>
+  <li>Cloud Provider: Azure</li>
   <li>API Testing: Postman</li>
   <li>IDE : Visual Studio Code</li>
   <li>Containerization: Docker</li>
-  <li>Container Orchestration System : Kubernetes</li>
+  <li>Container Orchestration System : Kubernetes(AKS)</li>
 </ul>
