@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 
 const isAdmin = (req, res, next) => {
+
+    console.log("user -> payment -> ");
+
     let token = req.headers.authorization.split(" ")[1];
     token = token.replace(/"/g, '');
     try {

@@ -11,6 +11,7 @@ const authenticateadminRole = async (req, res, next) => {
         // Extract token from request headers
         const token = req.headers.authorization.split(" ")[1];
 
+        console.log();
         // Send request to user management service to authenticate user's role
         const response = await axios.get('https://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
             headers: {

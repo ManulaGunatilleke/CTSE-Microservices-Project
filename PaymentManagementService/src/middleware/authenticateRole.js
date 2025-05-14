@@ -1,4 +1,9 @@
 const axios = require('axios');
+const https = require('https');
+
+const agent = new https.Agent({  
+    rejectUnauthorized: false  // ⚠️ This disables SSL certificate validation
+  });
 
 const authenticateStudentRole = async (req, res, next) => {
     try {
@@ -28,6 +33,8 @@ const authenticateadminRole = async (req, res, next) => {
     try {
         // Extract token from request headers
         const token = req.headers.authorization.split(" ")[1];
+
+        console.log("payment ->")
 
         // Send request to user management service to authenticate user's role
         const response = await axios.get('https://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
