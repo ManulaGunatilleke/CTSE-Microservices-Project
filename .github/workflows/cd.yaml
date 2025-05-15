@@ -5,7 +5,6 @@ on:
     workflows: ["Continuous Integration"]
     types:
       - completed
-    branches: [main, develop]
 
   workflow_dispatch:
     inputs:
@@ -24,7 +23,9 @@ jobs:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     environment: Docker
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'develop')
 
     strategy:
       matrix:
@@ -75,12 +76,13 @@ jobs:
           build-args: |
             NPM_CONFIG_OPTIONAL=false
 
-
   deploy:
-    if: |
-      (github.event.workflow_run.conclusion == 'success') ||
-      (github.event_name == 'workflow_dispatch')
+    name: Deploy to Kubernetes
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'develop'))
 
     steps:
       - name: Checkout code
