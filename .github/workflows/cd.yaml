@@ -17,6 +17,8 @@ on:
           - development
           - production
 
+# check branch policies
+
 jobs:
 
   build-and-push:
