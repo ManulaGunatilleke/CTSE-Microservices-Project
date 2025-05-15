@@ -1,10 +1,12 @@
 name: Continuous Deployment
 
 on:
-  push:
-    branches:
-      - main
-      - develop
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types:
+      - completed
+    branches: [main, develop]
+
   workflow_dispatch:
     inputs:
       environment:
@@ -17,96 +19,159 @@ on:
           - production
 
 jobs:
-  build-and-deploy:
+  deploy:
+    if: |
+      (github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    environment: Docker
-    strategy:
-      matrix:
-        service: [
-          {name: 'user-management', dir: './UserManagementService'},
-          {name: 'course-management', dir: './CourseManagementService'},
-          {name: 'payment-management', dir: './PaymentManagementService'},
-          {name: 'enrollment-management', dir: './EnrollmentManagementService'}
-        ]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Determine environment
+      - name: Determine environment and namespace
         id: env
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF}}" == "refs/heads/main" ]]; then
-            echo "env=production" >> $GITHUB_OUTPUT
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "main" ]]; then
+            ENVIRONMENT="production"
           else
-            echo "env=development" >> $GITHUB_OUTPUT
+            ENVIRONMENT="development"
           fi
+          NAMESPACE="default"
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Get SHA
+        id: vars
+        run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Update Dockerfile for native module support
-        working-directory: ${{ matrix.service.dir }}
-        run: |
-          if [ -f "Dockerfile" ]; then
-            sed -i '/^FROM/a RUN apk add --no-cache python3 make g++ gcc libc-dev' Dockerfile
-          else
-            echo "Dockerfile not found in ${{ matrix.service.dir }}"
-            exit 1
-          fi
-
-      - name: Build and push multi-arch Docker images
-        uses: docker/build-push-action@v4
-        with:
-          context: ${{ matrix.service.dir }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            NPM_CONFIG_OPTIONAL=false
+          version: 'latest'
 
       - name: Create kubeconfig file
         run: |
-          if [[ "${{ steps.env.outputs.env }}" == "production" ]]; then
-            echo -n "${{ secrets.PROD_KUBE_CONFIG }}" | base64 --decode > kubeconfig
+          if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
+            echo -n "${{ secrets.PROD_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
           else
-            echo -n "${{ secrets.DEV_KUBE_CONFIG }}" | base64 --decode > kubeconfig
+            echo -n "${{ secrets.DEV_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
           fi
+
+      - name: Validate kubeconfig
+        run: |
+          if [ ! -s ${{ github.workspace }}/kubeconfig ]; then
+            echo "Error: kubeconfig file is empty or does not exist"
+            exit 1
+          fi
+          grep -q "apiVersion:" ${{ github.workspace }}/kubeconfig || { echo "Error: kubeconfig invalid, missing apiVersion"; exit 1; }
+          grep -q "kind:" ${{ github.workspace }}/kubeconfig || { echo "Error: kubeconfig invalid, missing kind"; exit 1; }
 
       - name: Set up Helm
         uses: azure/setup-helm@v1
+        with:
+          version: 'latest'
 
-      - name: Deploy service using Helm
-        env:
-          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+      - name: Generate values-runtime.yaml
         run: |
-          cat > values-runtime.yaml <<EOF
+          cat <<EOF > values-runtime.yaml
           namespace: default
+
           common:
             registry: ${{ secrets.DOCKERHUB_USERNAME }}
             imagePullPolicy: Always
-            environment: ${{ steps.env.outputs.env }}
+            environment: ${{ steps.env.outputs.environment }}
           services:
-            ${MATRIX_NAME}:
-              tag: ${{ github.sha }}
+            client:
+              tag: ${{ steps.vars.outputs.sha }}
               enabled: true
+              secrets:
+                enabled: true
+                data:
+                  REACT_APP_BACKEND_URL: "${{ secrets.REACT_APP_BACKEND_URL }}"
+                  REACT_APP_EMAILJS_SERVICE_ID: "${{ secrets.REACT_APP_EMAILJS_SERVICE_ID }}"
+                  REACT_APP_EMAILJS_TEMPLATE_ID: "${{ secrets.REACT_APP_EMAILJS_TEMPLATE_ID }}"
+                  REACT_APP_EMAILJS_USER_ID: "${{ secrets.REACT_APP_EMAILJS_USER_ID }}"
+                  REACT_APP_FIREBASE_API_KEY: "${{ secrets.REACT_APP_FIREBASE_API_KEY }}"
+                  REACT_APP_FIREBASE_APP_ID: "${{ secrets.REACT_APP_FIREBASE_APP_ID }}"
+                  REACT_APP_FIREBASE_AUTH_DOMAIN: "${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}"
+                  REACT_APP_FIREBASE_MEASUREMENT_ID: "${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}"
+                  REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}"
+                  REACT_APP_FIREBASE_PROJECT_ID: "${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}"
+                  REACT_APP_FIREBASE_STORAGE_BUCKET: "${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}"
+            apiGateway:
+              tag: ${{ steps.vars.outputs.sha }}
+              enabled: true
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            userManagement:
+              tag: ${{ steps.vars.outputs.sha }}
+              enabled: true
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            courseManagement:
+              tag: ${{ steps.vars.outputs.sha }}
+              enabled: true
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            paymentManagement:
+              tag: ${{ steps.vars.outputs.sha }}
+              enabled: true
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+            enrollmentManagement:
+              tag: ${{ steps.vars.outputs.sha }}
+              enabled: true
+              secrets:
+                enabled: true
+                data:
+                  MONGODB_URL: "${{ secrets.MONGODB_URL }}"
           EOF
 
-          helm upgrade --install learning-platform ./learning-platform \
-            --namespace default \
-            --values learning-platform/values.yaml \
-            --values values-runtime.yaml
+                - name: Deploy to Kubernetes using Helm
+                  env:
+                    KUBECONFIG: ${{ github.workspace }}/kubeconfig
+                  run: |
+                    cd learning-platform
+                    echo "Current directory:"
+                    pwd
+
+                    echo "Directory contents:"
+                    ls -l
+
+                    NAMESPACE=default
+                    RELEASE_NAME=learning-platform
+
+                    # Check if the release exists
+                    if helm status $RELEASE_NAME -n $NAMESPACE > /dev/null 2>&1; then
+                      echo "Deleting existing release (if failed or broken)..."
+                      helm uninstall $RELEASE_NAME -n $NAMESPACE || true
+                      sleep 5
+                    fi
+
+                    # Install fresh release
+                    echo "Installing new release..."
+                    helm install $RELEASE_NAME . \
+                      --namespace $NAMESPACE \
+                      --values values.yaml \
+                      --values ../values-runtime.yaml
+
+                - name: Verify deployment
+                  env:
+                    KUBECONFIG: ${{ github.workspace }}/kubeconfig
+                  run: |
+                    NAMESPACE=${{ steps.env.outputs.namespace }}
+                    kubectl get pods -n $NAMESPACE
+                    kubectl get services -n $NAMESPACE
