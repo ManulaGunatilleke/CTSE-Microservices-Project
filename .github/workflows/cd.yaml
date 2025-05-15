@@ -1,16 +1,18 @@
 name: Continuous Deployment
 
 on:
-  # Only run on completed CI workflows from main/develop branches
-  workflow_run:
-    workflows: ["Continuous Integration"]
-    types:
-      - completed
+  # Only run this workflow as a follow-up to a specific workflow event
+  # This ensures this only runs after a successful merge to main/develop
+  push:
     branches:
       - main
       - develop
+    # Prevent running on just any file change
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/cd.yml'
 
-  # Manual trigger option
+  # For manual trigger for emergency deployments
   workflow_dispatch:
     inputs:
       environment:
@@ -23,39 +25,12 @@ on:
           - production
 
 jobs:
-
-  verify-merge:
-    name: Verify Merge to Target Branch
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run'
-    outputs:
-      proceed: ${{ steps.check.outputs.proceed }}
-      branch: ${{ steps.check.outputs.branch }}
-    steps:
-      - name: Check if it merge to main/develop
-        id: check
-        run: |
-          # gets the branch that the CI workflow ran on
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          echo "Detected branch: $BRANCH"
-          
-          # Check if it's main or develop and if CI succeeded
-          if [[ "$BRANCH" == "main" || "$BRANCH" == "develop" ]] && [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
-            echo "This is a successful CI run on $BRANCH branch"
-            echo "proceed=true" >> $GITHUB_OUTPUT
-            echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          else
-            echo "This is either not a target branch or CI didn't succeed"
-            echo "proceed=false" >> $GITHUB_OUTPUT
-            echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          fi
-
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     environment: Docker
-    needs: [verify-merge]
-    if: ${{ github.event_name == 'workflow_dispatch' || (needs.verify-merge.outputs.proceed == 'true') }}
+    # checking if CI is passing on a proper merge
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
 
     strategy:
       matrix:
@@ -109,8 +84,8 @@ jobs:
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
-    needs: [verify-merge, build-and-push]
-    if: ${{ github.event_name == 'workflow_dispatch' || (needs.verify-merge.outputs.proceed == 'true') }}
+    needs: build-and-push
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
 
     steps:
       - name: Checkout code
@@ -121,7 +96,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             ENVIRONMENT="${{ github.event.inputs.environment }}"
-          elif [[ "${{ needs.verify-merge.outputs.branch }}" == "main" ]]; then
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             ENVIRONMENT="production"
           else
             ENVIRONMENT="development"
