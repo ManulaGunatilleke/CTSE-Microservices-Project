@@ -5,6 +5,9 @@ on:
     workflows: ["Continuous Integration"]
     types:
       - completed
+    branches:
+      - main
+      - develop
 
   workflow_dispatch:
     inputs:
@@ -17,17 +20,13 @@ on:
           - development
           - production
 
-# check branch policies
-
 jobs:
 
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     environment: Docker
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'develop')
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
 
     strategy:
       matrix:
@@ -81,10 +80,8 @@ jobs:
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'develop'))
+    needs: build-and-push
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
 
     steps:
       - name: Checkout code
@@ -206,24 +203,12 @@ jobs:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
           cd learning-platform
-          echo "Current directory:"
-          pwd
-
-          echo "Directory contents:"
-          ls -l
-
-          NAMESPACE=default
+          echo "Installing Helm release..."
           RELEASE_NAME=learning-platform
+          NAMESPACE=default
 
-          # Check if the release exists
-          if helm status $RELEASE_NAME -n $NAMESPACE > /dev/null 2>&1; then
-            echo "Deleting existing release (if failed or broken)..."
-            helm uninstall $RELEASE_NAME -n $NAMESPACE || true
-            sleep 5
-          fi
-
-          # Install fresh release
-          echo "Installing new release..."
+          helm uninstall $RELEASE_NAME -n $NAMESPACE || true
+          sleep 5
           helm install $RELEASE_NAME . \
             --namespace $NAMESPACE \
             --values values.yaml \
@@ -233,6 +218,5 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
-          NAMESPACE=${{ steps.env.outputs.namespace }}
-          kubectl get pods -n $NAMESPACE
-          kubectl get services -n $NAMESPACE
+          kubectl get pods -n ${{ steps.env.outputs.namespace }}
+          kubectl get services -n ${{ steps.env.outputs.namespace }}
