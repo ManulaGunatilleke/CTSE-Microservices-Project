@@ -140,38 +140,38 @@ jobs:
                   MONGODB_URL: "${{ secrets.MONGODB_URL }}"
           EOF
 
-                - name: Deploy to Kubernetes using Helm
-                  env:
-                    KUBECONFIG: ${{ github.workspace }}/kubeconfig
-                  run: |
-                    cd learning-platform
-                    echo "Current directory:"
-                    pwd
+      - name: Deploy to Kubernetes using Helm
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          cd learning-platform
+          echo "Current directory:"
+          pwd
 
-                    echo "Directory contents:"
-                    ls -l
+          echo "Directory contents:"
+          ls -l
 
-                    NAMESPACE=default
-                    RELEASE_NAME=learning-platform
+          NAMESPACE=default
+          RELEASE_NAME=learning-platform
 
-                    # Check if the release exists
-                    if helm status $RELEASE_NAME -n $NAMESPACE > /dev/null 2>&1; then
-                      echo "Deleting existing release (if failed or broken)..."
-                      helm uninstall $RELEASE_NAME -n $NAMESPACE || true
-                      sleep 5
-                    fi
+          # Check if the release exists
+          if helm status $RELEASE_NAME -n $NAMESPACE > /dev/null 2>&1; then
+            echo "Deleting existing release (if failed or broken)..."
+            helm uninstall $RELEASE_NAME -n $NAMESPACE || true
+            sleep 5
+          fi
 
-                    # Install fresh release
-                    echo "Installing new release..."
-                    helm install $RELEASE_NAME . \
-                      --namespace $NAMESPACE \
-                      --values values.yaml \
-                      --values ../values-runtime.yaml
+          # Install fresh release
+          echo "Installing new release..."
+          helm install $RELEASE_NAME . \
+            --namespace $NAMESPACE \
+            --values values.yaml \
+            --values ../values-runtime.yaml
 
-                - name: Verify deployment
-                  env:
-                    KUBECONFIG: ${{ github.workspace }}/kubeconfig
-                  run: |
-                    NAMESPACE=${{ steps.env.outputs.namespace }}
-                    kubectl get pods -n $NAMESPACE
-                    kubectl get services -n $NAMESPACE
+      - name: Verify deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          NAMESPACE=${{ steps.env.outputs.namespace }}
+          kubectl get pods -n $NAMESPACE
+          kubectl get services -n $NAMESPACE
