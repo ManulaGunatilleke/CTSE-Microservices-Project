@@ -31,5 +31,3 @@ router.post('', authenticateStudentRole, createPayment);
 router.get("/getAllPayments", authenticateadminRole, getAllPayments);
 
 module.exports = router;
-
-// checking if CI is passing on a proper merge
