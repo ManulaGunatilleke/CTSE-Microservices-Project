@@ -19,8 +19,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
-
+    environment: Docker
     strategy:
       matrix:
         service: [
@@ -29,24 +28,20 @@ jobs:
           {name: 'payment-management', dir: './PaymentManagementService'},
           {name: 'enrollment-management', dir: './EnrollmentManagementService'}
         ]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Determine environment and namespace
+      - name: Determine environment
         id: env
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            echo "env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF}}" == "refs/heads/main" ]]; then
-            ENVIRONMENT="production"
+            echo "env=production" >> $GITHUB_OUTPUT
           else
-            ENVIRONMENT="development"
+            echo "env=development" >> $GITHUB_OUTPUT
           fi
-          NAMESPACE="default"
-          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
-          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -84,61 +79,34 @@ jobs:
           build-args: |
             NPM_CONFIG_OPTIONAL=false
 
-  deploy:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Create kubeconfig file
         run: |
-          if [[ "${{ needs.build-and-deploy.outputs.environment }}" == "production" ]]; then
-            echo -n "${{ secrets.PROD_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
+          if [[ "${{ steps.env.outputs.env }}" == "production" ]]; then
+            echo -n "${{ secrets.PROD_KUBE_CONFIG }}" | base64 --decode > kubeconfig
           else
-            echo -n "${{ secrets.DEV_KUBE_CONFIG }}" | base64 --decode > ${{ github.workspace }}/kubeconfig
+            echo -n "${{ secrets.DEV_KUBE_CONFIG }}" | base64 --decode > kubeconfig
           fi
 
       - name: Set up Helm
         uses: azure/setup-helm@v1
 
-      - name: Generate values-runtime.yaml
+      - name: Deploy service using Helm
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: |
-          cat > values-runtime.yaml << EOF
+          cat > values-runtime.yaml <<EOF
           namespace: default
           common:
             registry: ${{ secrets.DOCKERHUB_USERNAME }}
             imagePullPolicy: Always
-            environment: ${{ needs.build-and-deploy.outputs.environment }}
+            environment: ${{ steps.env.outputs.env }}
           services:
-            userManagement:
+            ${MATRIX_NAME}:
               tag: ${{ github.sha }}
-              ...
-            courseManagement:
-              tag: ${{ github.sha }}
-              ...
-            paymentManagement:
-              tag: ${{ github.sha }}
-              ...
-            enrollmentManagement:
-              tag: ${{ github.sha }}
-              ...
+              enabled: true
           EOF
 
-      - name: Deploy to Kubernetes using Helm
-        env:
-          KUBECONFIG: ${{ github.workspace }}/kubeconfig
-        run: |
-          cd learning-platform
-          helm upgrade --install learning-platform . \
+          helm upgrade --install learning-platform ./learning-platform \
             --namespace default \
-            --values values.yaml \
-            --values ../values-runtime.yaml
-
-      - name: Verify deployment
-        env:
-          KUBECONFIG: ${{ github.workspace }}/kubeconfig
-        run: |
-          kubectl get pods -n default
-          kubectl get services -n default
+            --values learning-platform/values.yaml \
+            --values values-runtime.yaml
