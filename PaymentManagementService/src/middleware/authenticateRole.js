@@ -37,7 +37,7 @@ const authenticateadminRole = async (req, res, next) => {
         console.log("payment ->")
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
+        const response = await axios.get('https://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
             headers: {
                 Authorization: `Bearer ${token}`
             }
