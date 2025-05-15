@@ -5,6 +5,9 @@ on:
     workflows: ["Continuous Integration"]
     types:
       - completed
+    branches:
+      - main
+      - develop
 
   workflow_dispatch:
     inputs:
@@ -23,7 +26,7 @@ jobs:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     environment: Docker
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run'
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
 
     strategy:
       matrix:
@@ -35,15 +38,6 @@ jobs:
         ]
 
     steps:
-      - name: Ensure correct branch is triggered
-        if: github.event_name == 'workflow_run'
-        run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" ]]; then
-            echo "Skipping job because branch is not main or develop: $BRANCH"
-            exit 1
-          fi
-
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -86,18 +80,10 @@ jobs:
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run'
+    needs: build-and-push
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
 
     steps:
-      - name: Ensure correct branch is triggered
-        if: github.event_name == 'workflow_run'
-        run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" ]]; then
-            echo "Skipping deploy because branch is not main or develop: $BRANCH"
-            exit 1
-          fi
-
       - name: Checkout code
         uses: actions/checkout@v3
 
