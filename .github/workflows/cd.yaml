@@ -19,6 +19,63 @@ on:
           - production
 
 jobs:
+
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    environment: Docker
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        service: [
+          {name: 'user-management', dir: './UserManagementService'},
+          {name: 'course-management', dir: './CourseManagementService'},
+          {name: 'payment-management', dir: './PaymentManagementService'},
+          {name: 'enrollment-management', dir: './EnrollmentManagementService'}
+        ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Update Dockerfile for native module support
+        working-directory: ${{ matrix.service.dir }}
+        run: |
+          if [ -f "Dockerfile" ]; then
+            sed -i '/^FROM/a RUN apk add --no-cache python3 make g++ gcc libc-dev' Dockerfile
+          else
+            echo "Dockerfile not found in ${{ matrix.service.dir }}"
+            exit 1
+          fi
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ matrix.service.dir }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NPM_CONFIG_OPTIONAL=false
+
+
   deploy:
     if: |
       (github.event.workflow_run.conclusion == 'success') ||
