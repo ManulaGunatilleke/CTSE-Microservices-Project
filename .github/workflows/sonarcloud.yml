@@ -23,11 +23,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies - client
-        run: |
-          cd client
-          npm ci
-
+          
       - name: Install dependencies - CourseManagementService
         run: |
           cd CourseManagementService
