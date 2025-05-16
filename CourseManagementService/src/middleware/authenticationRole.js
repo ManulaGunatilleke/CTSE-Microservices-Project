@@ -6,7 +6,7 @@ const agent = new https.Agent({
     rejectUnauthorized: false  
   });
 
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.BASE_URL || 'http://akslerningplatform.eastus.cloudapp.azure.com';
 
 const authenticateadminRole = async (req, res, next) => {
     try {
