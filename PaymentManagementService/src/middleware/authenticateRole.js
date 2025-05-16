@@ -11,7 +11,7 @@ const authenticateStudentRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('https://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/student', {
+        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/student', {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -37,7 +37,7 @@ const authenticateadminRole = async (req, res, next) => {
         console.log("payment ->")
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('https://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
+        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
             headers: {
                 Authorization: `Bearer ${token}`
             }
