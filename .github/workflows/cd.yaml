@@ -224,3 +224,8 @@ jobs:
         run: |
           kubectl get pods -n ${{ steps.env.outputs.namespace }}
           kubectl get services -n ${{ steps.env.outputs.namespace }}
+          kubectl rollout restart deployment course-management -n test-ingress
+          kubectl rollout restart deployment payment-management -n test-ingress
+          kubectl rollout restart deployment enrollment-management -n test-ingress
+          kubectl rollout restart deployment user-management -n test-ingress
+
