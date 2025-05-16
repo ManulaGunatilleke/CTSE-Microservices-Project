@@ -1,10 +1,12 @@
 const axios = require('axios');
 const https = require('https');
+require('dotenv').config();
 
 const agent = new https.Agent({  
-    rejectUnauthorized: false  // ⚠️ This disables SSL certificate validation
+    rejectUnauthorized: false  
   });
 
+const BASE_URL = process.env.BASE_URL;
 
 const authenticateadminRole = async (req, res, next) => {
     try {
@@ -13,7 +15,7 @@ const authenticateadminRole = async (req, res, next) => {
 
         console.log();
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/admin', {
+        const response = await axios.get(`${BASE_URL}/user/authenticate-role/admin`, {
             headers: {
                 Authorization: `Bearer ${token}`
             },
@@ -38,7 +40,7 @@ const authenticateadminAndInstructorRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/adminAndInstructor', {
+        const response = await axios.get(`${BASE_URL}/user/authenticate-role/adminAndInstructor`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -62,7 +64,7 @@ const authenticateadminAndStudentRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/adminAndStudent', {
+        const response = await axios.get(`${BASE_URL}/user/authenticate-role/adminAndStudent`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -86,7 +88,7 @@ const authenticatestudentRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/student', {
+        const response = await axios.get(`${BASE_URL}/user/authenticate-role/student`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -110,7 +112,7 @@ const authenticateinstructorRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/instructor', {
+        const response = await axios.get(`${BASE_URL}/user/authenticate-role/instructor`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -134,7 +136,7 @@ const authenticateinstructorAndStudentRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
-        const response = await axios.get('http://akslerningplatform.eastus.cloudapp.azure.com/user/authenticate-role/instructorAndStudent', {
+        const response = await axios.get(`${BASE_URL}/user/authenticate-role/instructorAndStudent`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

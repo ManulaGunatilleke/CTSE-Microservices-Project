@@ -179,6 +179,7 @@ jobs:
                 enabled: true
                 data:
                   MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+                  BASE_URL: "${{ secrets.BASE_URL }}"
             courseManagement:
               tag: ${{ steps.vars.outputs.sha }}
               enabled: true
@@ -186,6 +187,7 @@ jobs:
                 enabled: true
                 data:
                   MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+                  BASE_URL: "${{ secrets.BASE_URL }}"
             paymentManagement:
               tag: ${{ steps.vars.outputs.sha }}
               enabled: true
@@ -193,6 +195,7 @@ jobs:
                 enabled: true
                 data:
                   MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+                  BASE_URL: "${{ secrets.BASE_URL }}"
             enrollmentManagement:
               tag: ${{ steps.vars.outputs.sha }}
               enabled: true
@@ -200,6 +203,7 @@ jobs:
                 enabled: true
                 data:
                   MONGODB_URL: "${{ secrets.MONGODB_URL }}"
+                  BASE_URL: "${{ secrets.BASE_URL }}"
           EOF
 
       - name: Deploy to Kubernetes using Helm
