@@ -43,6 +43,7 @@ services:
         JWT_SECRET: "your_fallback_secret"
         SESSION_SECRET: "Your_Secret_Token"
         NODE_ENV: "production"
+        BASE_URL: ""
 
   courseManagement:
     name: course-management
@@ -64,6 +65,7 @@ services:
       enabled: true
       data:
         MONGODB_URL: ""
+        BASE_URL: ""
         
   paymentManagement:
     name: payment-management
@@ -85,6 +87,7 @@ services:
       enabled: true
       data:
         MONGODB_URL: ""
+        BASE_URL: ""
         
   enrollmentManagement:
     name: enrollment-management
@@ -106,3 +109,4 @@ services:
       enabled: true
       data:
         MONGODB_URL: ""
+        BASE_URL: ""
