@@ -6,7 +6,7 @@ const agent = new https.Agent({
     rejectUnauthorized: false  
   });
 
-const BASE_URL = process.env.BASE_URL || "http://akslerningplatform.eastus.cloudapp.azure.com";
+const BASE_URL = process.env.BASE_URL || "http://akslerningplatform.eastus.cloudapp.azure.com" || "http://akslerningplatform.eastus.cloudapp.azure.com";
 //check sonarCloud failure
 const authenticateStudentRole = async (req, res, next) => {
     try {
