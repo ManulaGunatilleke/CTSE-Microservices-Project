@@ -6,7 +6,7 @@ const agent = new https.Agent({
     rejectUnauthorized: false  
   });
 
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.BASE_URL || "http://akslerningplatform.eastus.cloudapp.azure.com";
 
 const authenticateStudentRole = async (req, res, next) => {
     try {
@@ -64,5 +64,3 @@ module.exports = {
     authenticateadminRole,
     authenticateStudentRole
 };
-
-// changes to the code 
