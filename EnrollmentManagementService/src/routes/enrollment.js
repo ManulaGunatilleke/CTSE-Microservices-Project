@@ -2,6 +2,7 @@ const router = require("express").Router();
 const helmet = require('helmet');
 //const { isAdmin, isInstructor, isStudent } = require("../../../UserManagementService/src/middleware/authMiddleware");
 const { isAdmin, isInstructor, isStudent } = require("../middleware/authMiddleware");
+const { authenticateadminRole, authenticateStudentRole } = require("../middleware/authenticateRole");
 
 // Configure csp headers
 router.use(helmet.contentSecurityPolicy({
@@ -35,7 +36,7 @@ const {
 router.post("/createEnrollment", createEnrollment);
 
 // Get All Enrollments
-router.get("/getAllEnrollments", isAdmin, getAllEnrollments);
+router.get("/getAllEnrollments", authenticateadminRole, getAllEnrollments);
 
 // Get Enrollments by User
 router.get("/user/:userId", getEnrollmentsByUser);
