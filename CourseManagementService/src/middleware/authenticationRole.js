@@ -14,6 +14,7 @@ const authenticateadminRole = async (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
 
         console.log();
+        //code change -> check
         // Send request to user management service to authenticate user's role
         const response = await axios.get(`${BASE_URL}/user/authenticate-role/admin`, {
             headers: {
