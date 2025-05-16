@@ -88,6 +88,7 @@ services:
       data:
         MONGODB_URL: ""
         BASE_URL: ""
+        SECRET_KEY: ""
         
   enrollmentManagement:
     name: enrollment-management

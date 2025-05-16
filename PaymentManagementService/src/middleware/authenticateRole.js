@@ -1,17 +1,16 @@
 const axios = require('axios');
+//const https = require('https');
 require('dotenv').config();
+// const agent = new https.Agent({  
+//     rejectUnauthorized: false  // ⚠️ This disables SSL certificate validation
+//   });
 
-// Base URL from environment variables
 const BASE_URL = process.env.BASE_URL;
 
 const authenticateStudentRole = async (req, res, next) => {
     try {
         // Extract token from request headers
-        const token = req.headers.authorization?.split(" ")[1];
-        
-        if (!token) {
-            return res.status(401).json({ message: "Authorization token is required" });
-        }
+        const token = req.headers.authorization.split(" ")[1];
 
         // Send request to user management service to authenticate user's role
         const response = await axios.get(`${BASE_URL}/user/authenticate-role/student`, {
@@ -32,20 +31,19 @@ const authenticateStudentRole = async (req, res, next) => {
     }
 };
 
-const authenticateAdminRole = async (req, res, next) => {
+const authenticateadminRole = async (req, res, next) => {
     try {
         // Extract token from request headers
-        const token = req.headers.authorization?.split(" ")[1];
-        
-        if (!token) {
-            return res.status(401).json({ message: "Authorization token is required" });
-        }
+        const token = req.headers.authorization.split(" ")[1];
+
+        console.log("payment ->")
 
         // Send request to user management service to authenticate user's role
         const response = await axios.get(`${BASE_URL}/user/authenticate-role/admin`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
+            // httpsAgent: agent,
         });
 
         // Check if authentication was successful
@@ -56,11 +54,11 @@ const authenticateAdminRole = async (req, res, next) => {
         }
     } catch (error) {
         console.error("Error authenticating user role:", error);
-        res.status(403).json({ message: "Access denied, user does not have ADMIN role" });
+        res.status(500).json({ message: "Access denied, user does not have ADMIN role" });
     }
 };
 
 module.exports = {
-    authenticateAdminRole,
+    authenticateadminRole,
     authenticateStudentRole
 };

@@ -196,6 +196,7 @@ jobs:
                 data:
                   MONGODB_URL: "${{ secrets.MONGODB_URL }}"
                   BASE_URL: "${{ secrets.BASE_URL }}"
+                  SECRET_KEY: "${{ secrets.SECRET_KEY }}"
             enrollmentManagement:
               tag: ${{ steps.vars.outputs.sha }}
               enabled: true
