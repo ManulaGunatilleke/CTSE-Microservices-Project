@@ -1,9 +1,10 @@
 const axios = require('axios');
-//const https = require('https');
+const https = require('https');
 require('dotenv').config();
-// const agent = new https.Agent({  
-//     rejectUnauthorized: false  // ⚠️ This disables SSL certificate validation
-//   });
+
+const agent = new https.Agent({  
+    rejectUnauthorized: false  
+  });
 
 const BASE_URL = process.env.BASE_URL;
 
@@ -16,7 +17,8 @@ const authenticateStudentRole = async (req, res, next) => {
         const response = await axios.get(`${BASE_URL}/user/authenticate-role/student`, {
             headers: {
                 Authorization: `Bearer ${token}`
-            }
+            },
+            httpsAgent: agent,
         });
 
         // Check if authentication was successful
@@ -42,8 +44,8 @@ const authenticateadminRole = async (req, res, next) => {
         const response = await axios.get(`${BASE_URL}/user/authenticate-role/admin`, {
             headers: {
                 Authorization: `Bearer ${token}`
-            }
-            // httpsAgent: agent,
+            },
+            httpsAgent: agent,
         });
 
         // Check if authentication was successful
