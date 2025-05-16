@@ -35,7 +35,7 @@ const {
 router.post("/createEnrollment", createEnrollment);
 
 // Get All Enrollments
-router.get("/getAllEnrollments", getAllEnrollments);
+router.get("/getAllEnrollments", isAdmin, getAllEnrollments);
 
 // Get Enrollments by User
 router.get("/user/:userId", getEnrollmentsByUser);
