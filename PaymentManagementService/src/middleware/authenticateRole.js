@@ -7,7 +7,7 @@ const agent = new https.Agent({
   });
 
 const BASE_URL = process.env.BASE_URL || "http://akslerningplatform.eastus.cloudapp.azure.com";
-
+//check sonarCloud failure
 const authenticateStudentRole = async (req, res, next) => {
     try {
         // Extract token from request headers
